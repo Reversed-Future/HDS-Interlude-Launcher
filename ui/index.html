@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>HDS-Interlude Launcher</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="setup.css" />
+    <link rel="stylesheet" href="configuration.css" />
+  </head>
+  <body>
+    <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="i-grid" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="2" />
+          <rect x="14" y="3" width="7" height="7" rx="2" />
+          <rect x="3" y="14" width="7" height="7" rx="2" />
+          <rect x="14" y="14" width="7" height="7" rx="2" />
+        </symbol>
+        <symbol id="i-globe" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c6 5 6 13 0 18-6-5-6-13 0-18Z" />
+        </symbol>
+        <symbol id="i-book" viewBox="0 0 24 24">
+          <path
+            d="M12 5c-4-3-7-2-9-1v15c3-2 6-1 9 1 3-2 6-3 9-1V4c-2-1-5-2-9 1Zm0 0v15"
+          />
+        </symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24">
+          <path d="M4 7h16M4 17h16" />
+          <circle cx="9" cy="7" r="3" />
+          <circle cx="16" cy="17" r="3" />
+        </symbol>
+        <symbol id="i-play" viewBox="0 0 24 24">
+          <path d="m8 5 11 7-11 7Z" />
+        </symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12" rx="2" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M5 12h14m-5-5 5 5-5 5" />
+        </symbol>
+        <symbol id="i-terminal" viewBox="0 0 24 24">
+          <path d="m5 7 5 5-5 5m8 0h6" />
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24">
+          <path d="M20 10a8 8 0 1 0-1 7M20 4v6h-6" />
+        </symbol>
+        <symbol id="i-folder" viewBox="0 0 24 24">
+          <path
+            d="M3 7V5a2 2 0 0 1 2-2h5l3 4h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"
+          />
+        </symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="12" height="13" rx="2" />
+          <path d="M16 8V3H3v13h5" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24">
+          <path d="M20 14A9 9 0 0 1 10 3a9 9 0 1 0 10 11Z" />
+        </symbol>
+        <symbol id="i-db" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="5" rx="8" ry="3" />
+          <path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0" />
+        </symbol>
+      </defs>
+    </svg>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark"><span></span><span></span></span>
+        <div><strong>HDS-Interlude</strong><small>Launcher</small></div>
+      </div>
+      <div class="workspace">
+        <span class="workspace-dot"></span> 本地工作空间
+        <span class="tag">LOCAL</span>
+      </div>
+      <div class="nav-label">工作空间</div>
+      <nav aria-label="主导航">
+        <button
+          class="nav-item active"
+          data-route="dashboard"
+          aria-current="page"
+        >
+          <svg><use href="#i-grid" /></svg>启动台
+        </button>
+        <button class="nav-item" data-route="webui">
+          <svg><use href="#i-globe" /></svg>WebUI
+        </button>
+        <button class="nav-item" data-route="reader">
+          <svg><use href="#i-book" /></svg>剧本书架
+        </button>
+      </nav>
+      <div class="nav-label">安装与配置</div>
+      <nav aria-label="安装与配置">
+        <button class="nav-item" data-route="setup">
+          <svg><use href="#i-folder" /></svg>安装与更新
+        </button>
+        <button class="nav-item" data-route="guide">
+          <svg><use href="#i-check" /></svg>配置向导
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-route="settings">
+          <svg><use href="#i-settings" /></svg>设置
+        </button>
+        <div class="version">HDS-Interlude <span id="app-version"></span></div>
+        <button
+          class="button small"
+          id="update-indicator"
+          data-go="setup"
+          hidden
+        >
+          启动器有新版本
+        </button>
+      </div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="breadcrumb">
+          工作空间 <span>/</span> <strong id="breadcrumb">启动台</strong>
+        </div>
+        <div class="top-meta">
+          <span class="tiny-dot"></span> 本地运行 <span class="divider">|</span
+          ><span id="today"></span>
+        </div>
+      </header>
+      <main>
+        <section
+          class="page"
+          id="page-dashboard"
+          aria-labelledby="dashboard-title"
+        >
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">YOUR LOCAL COMMAND CENTER</div>
+              <h1 id="dashboard-title">
+                一切就绪，即刻开场<span class="heading-dot">。</span>
+              </h1>
+              <p>连接你的程序，让故事自然发生。</p>
+            </div>
+            <button id="start-all" class="button primary large">
+              <svg><use href="#i-play" /></svg>一键启动<span class="keycap"
+                >Ctrl ↵</span
+              >
+            </button>
+          </div>
+          <div class="section-line">
+            <h2>应用与服务 <span>03</span></h2>
+            <span id="service-summary">尚未启动</span>
+          </div>
+          <div class="service-grid" id="service-grid">
+            <article class="service-card" data-service="koishi">
+              <div class="card-top">
+                <div class="app-icon koishi">K<span>✦</span></div>
+                <span class="status" data-status="koishi"><i></i>未启动</span>
+              </div>
+              <h3>Koishi</h3>
+              <p class="service-description">机器人应用与插件服务</p>
+              <div class="service-path" id="path-koishi">尚未配置目录</div>
+              <div class="card-footer">
+                <button class="text-button" data-open-web="koishi">
+                  打开 WebUI <svg><use href="#i-arrow" /></svg></button
+                ><button class="button small" data-start="koishi">
+                  <svg><use href="#i-play" /></svg>启动
+                </button>
+              </div>
+            </article>
+            <article class="service-card" data-service="snowluma">
+              <div class="card-top">
+                <div class="app-icon snowluma">
+                  <svg><use href="#i-moon" /></svg>
+                </div>
+                <span class="status" data-status="snowluma"><i></i>未启动</span>
+              </div>
+              <h3>SnowLuma</h3>
+              <p class="service-description">QQ 连接与运行服务</p>
+              <div class="service-path" id="path-snowluma">尚未配置目录</div>
+              <div class="card-footer">
+                <button class="text-button" data-open-web="snowluma">
+                  打开 WebUI <svg><use href="#i-arrow" /></svg></button
+                ><button class="button small" data-start="snowluma">
+                  <svg><use href="#i-play" /></svg>启动
+                </button>
+              </div>
+            </article>
+            <article class="service-card" data-service="qq">
+              <div class="card-top">
+                <div class="app-icon qq">
+                  <svg viewBox="0 0 32 32" class="penguin">
+                    <path
+                      d="M10 15c-2-12 14-12 12 0 4 5 5 8 2 7l-1-1c-1 7-13 7-14 0l-1 1c-3 1-2-2 2-7Z"
+                    />
+                    <ellipse cx="16" cy="20" rx="5" ry="6" />
+                    <path d="M12 15h8M12 10h.1M20 10h.1" />
+                  </svg>
+                </div>
+                <span class="status" data-status="qq"><i></i>未启动</span>
+              </div>
+              <h3>QQ</h3>
+              <p class="service-description">桌面客户端</p>
+              <div class="service-path" id="path-qq">尚未配置程序</div>
+              <div class="card-footer">
+                <span class="subtle">独立窗口运行</span
+                ><button class="button small" data-start="qq">
+                  <svg><use href="#i-play" /></svg>打开
+                </button>
+              </div>
+            </article>
+          </div>
+          <div class="console-panel">
+            <div class="console-toolbar">
+              <div class="console-title">
+                <svg><use href="#i-terminal" /></svg>
+                <h2>运行日志</h2>
+                <div class="log-tabs" role="group" aria-label="日志来源">
+                  <button
+                    class="selected"
+                    data-log-tab="koishi"
+                    aria-pressed="true"
+                  >
+                    Koishi</button
+                  ><button data-log-tab="snowluma" aria-pressed="false">
+                    SnowLuma
+                  </button>
+                </div>
+              </div>
+              <div class="console-actions">
+                <label class="log-search"
+                  ><svg><use href="#i-search" /></svg
+                  ><input
+                    id="log-search"
+                    aria-label="搜索日志"
+                    placeholder="搜索日志…" /></label
+                ><button
+                  id="copy-logs"
+                  class="icon-button"
+                  title="复制当前程序日志"
+                  aria-label="复制日志"
+                >
+                  <svg><use href="#i-copy" /></svg></button
+                ><button id="clear-logs" class="text-button">清空</button>
+              </div>
+            </div>
+            <div
+              class="log-body"
+              id="log-body"
+              tabindex="0"
+              aria-label="程序运行日志"
+            >
+              <div id="log-empty" class="log-empty">
+                <div class="terminal-mark">
+                  <svg><use href="#i-terminal" /></svg>
+                </div>
+                <strong>等待第一条日志</strong>
+                <p>启动程序后，输出会实时显示在这里。</p>
+                <span>无需切换终端窗口</span>
+              </div>
+              <div id="log-lines"></div>
+            </div>
+            <div class="console-bottom">
+              <span
+                ><span class="tiny-dot" id="log-indicator"></span
+                ><span id="log-count">0 条日志</span
+                ><span class="console-hint">仅保留最近 3,000 条</span></span
+              ><label
+                ><input type="checkbox" id="auto-scroll" checked />
+                跟随最新日志</label
+              >
+            </div>
+          </div>
+          <div class="dashboard-bottom">
+            <span
+              ><svg><use href="#i-check" /></svg
+              ><span id="config-summary">配置保存在本机</span></span
+            ><button class="text-button danger" id="stop-all">
+              <svg><use href="#i-stop" /></svg>停止后台服务
+            </button>
+          </div>
+        </section>
+        <section
+          class="page web-page"
+          id="page-webui"
+          hidden
+          aria-labelledby="web-title"
+        >
+          <div class="page-heading compact">
+            <div>
+              <div class="eyebrow">A WINDOW INTO YOUR SERVICES</div>
+              <h1 id="web-title">WebUI</h1>
+              <p>管理服务，无需离开工作空间。</p>
+            </div>
+          </div>
+          <div class="browser-shell">
+            <div class="browser-toolbar">
+              <div class="segmented" role="group" aria-label="WebUI 程序">
+                <button
+                  data-web-tab="koishi"
+                  class="selected"
+                  aria-pressed="true"
+                >
+                  Koishi</button
+                ><button data-web-tab="snowluma" aria-pressed="false">
+                  SnowLuma
+                </button>
+              </div>
+              <div class="address">
+                <svg><use href="#i-globe" /></svg><span id="web-address"></span>
+              </div>
+              <button
+                class="icon-button"
+                id="web-reload"
+                title="重新加载网页"
+                aria-label="重新加载网页"
+              >
+                <svg><use href="#i-refresh" /></svg>
+              </button>
+            </div>
+            <div class="web-surface" id="web-surface">
+              <div class="empty-state">
+                <svg><use href="#i-globe" /></svg>
+                <h2 id="web-state-title">正在连接服务</h2>
+                <p id="web-state-detail">请确保程序已启动。</p>
+                <button class="button" id="web-retry">重新连接</button>
+              </div>
+            </div>
+          </div>
+          <p class="page-footnote">
+            登录状态会在本机保留。网页连接失败时，可以先回到启动台查看运行日志。
+          </p>
+        </section>
+        <section
+          class="page reader-page"
+          id="page-reader"
+          hidden
+          aria-labelledby="reader-title"
+        >
+          <div class="page-heading compact">
+            <div>
+              <div class="eyebrow">STORIES, AT YOUR OWN PACE</div>
+              <h1 id="reader-title">剧本书架</h1>
+              <p>把程序里的故事，留给安静的阅读时光。</p>
+            </div>
+            <div class="row">
+              <span class="readonly-badge"
+                ><svg><use href="#i-db" /></svg>只读连接</span
+              ><button class="button" id="refresh-stories">
+                <svg><use href="#i-refresh" /></svg>刷新书架
+              </button>
+            </div>
+          </div>
+          <div class="reader-shell">
+            <aside class="story-sidebar">
+              <div class="story-sidebar-heading">
+                我的剧本<span id="story-count">0</span>
+              </div>
+              <div id="story-list"></div>
+            </aside>
+            <div class="reading-pane">
+              <div class="reading-toolbar">
+                <div class="segmented" role="group" aria-label="阅读模式">
+                  <button
+                    class="selected"
+                    data-read-mode="script"
+                    aria-pressed="true"
+                  >
+                    剧本正文</button
+                  ><button data-read-mode="all" aria-pressed="false">
+                    完整记录
+                  </button>
+                </div>
+                <label class="reader-search"
+                  ><svg><use href="#i-search" /></svg
+                  ><input
+                    id="story-search"
+                    aria-label="搜索剧本内容"
+                    placeholder="搜索内容…" /></label
+                ><button
+                  id="reader-font"
+                  class="font-button"
+                  title="切换字号"
+                  aria-label="切换阅读字号"
+                >
+                  Aa
+                </button>
+              </div>
+              <div class="reading-scroll" id="reading-scroll">
+                <div class="empty-state" id="reader-empty">
+                  <svg><use href="#i-book" /></svg>
+                  <h2>正在打开书架</h2>
+                  <p>从 koishi.db 读取剧本。</p>
+                </div>
+                <article id="story-article" hidden>
+                  <header class="story-heading">
+                    <div class="eyebrow">INTERLUDE / SCRIPT ARCHIVE</div>
+                    <h2 id="story-name"></h2>
+                    <p id="story-meta"></p>
+                  </header>
+                  <details class="story-setting">
+                    <summary>角色与世界设定</summary>
+                    <div id="story-setting"></div>
+                  </details>
+                  <div id="story-entries"></div>
+                </article>
+              </div>
+              <div class="reader-pagination">
+                <span id="entry-summary">等待选择剧本</span>
+                <div class="row">
+                  <button class="button small" id="previous-page" disabled>
+                    上一页</button
+                  ><span id="page-number">—</span
+                  ><button class="button small" id="next-page" disabled>
+                    下一页
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section
+          class="page settings-page"
+          id="page-settings"
+          hidden
+          aria-labelledby="settings-title"
+        >
+          <div class="page-heading compact">
+            <div>
+              <div class="eyebrow">MAKE YOURSELF AT HOME</div>
+              <h1 id="settings-title">工作空间设置</h1>
+              <p>配置一次，每次启动都从这里开始。</p>
+            </div>
+            <button class="button primary" id="save-settings">
+              <svg><use href="#i-check" /></svg>保存设置
+            </button>
+          </div>
+          <form id="settings-form">
+            <section class="setup-card path-discovery">
+              <h2>识别已有安装</h2>
+              <p>
+                检测 QQ
+                安装记录与正在运行的进程，以及启动器目录、默认安装目录和已配置目录附近的程序。任意自定义位置可选择父目录扫描。
+              </p>
+              <div class="actions">
+                <button class="button" type="button" id="detect-paths">
+                  自动识别路径</button
+                ><button class="button" type="button" id="scan-parent">
+                  选择父目录扫描
+                </button>
+              </div>
+              <div id="detected-paths" hidden></div>
+            </section>
+            <section class="settings-section">
+              <div class="settings-section-title">
+                <h2>程序位置</h2>
+                <p>选择本机已安装的程序。</p>
+              </div>
+              <div class="settings-fields">
+                <label for="koishiDir"
+                  >Koishi 目录<span>在此目录执行 npm run start</span></label
+                >
+                <div class="path-field">
+                  <input
+                    id="koishiDir"
+                    name="koishiDir"
+                    autocomplete="off"
+                  /><button
+                    class="button"
+                    type="button"
+                    data-pick="koishiDir"
+                    data-kind="directory"
+                  >
+                    <svg><use href="#i-folder" /></svg>选择目录
+                  </button>
+                </div>
+                <label for="snowlumaDir"
+                  >SnowLuma 目录<span>运行目录中的 launcher.bat</span></label
+                >
+                <div class="path-field">
+                  <input
+                    id="snowlumaDir"
+                    name="snowlumaDir"
+                    autocomplete="off"
+                  /><button
+                    class="button"
+                    type="button"
+                    data-pick="snowlumaDir"
+                    data-kind="directory"
+                  >
+                    <svg><use href="#i-folder" /></svg>选择目录
+                  </button>
+                </div>
+                <label for="qqExe"
+                  >QQ 程序<span>选择安装目录或具体的 QQ.exe</span></label
+                >
+                <div class="path-field">
+                  <input id="qqExe" name="qqExe" autocomplete="off" /><button
+                    class="button"
+                    type="button"
+                    data-pick="qqExe"
+                    data-kind="qq-directory"
+                  >
+                    选择目录</button
+                  ><button
+                    class="button"
+                    type="button"
+                    data-pick="qqExe"
+                    data-kind="executable"
+                  >
+                    选择 EXE
+                  </button>
+                </div>
+              </div>
+            </section>
+            <section class="settings-section">
+              <div class="settings-section-title">
+                <h2>网页控制台</h2>
+                <p>填写程序的实际 WebUI 地址。</p>
+              </div>
+              <div class="settings-fields">
+                <label for="koishiUrl">Koishi WebUI</label
+                ><input
+                  id="koishiUrl"
+                  name="koishiUrl"
+                  type="url"
+                  placeholder="填写完整的 http:// 或 https:// 地址"
+                /><label for="snowlumaUrl">SnowLuma WebUI</label
+                ><input
+                  id="snowlumaUrl"
+                  name="snowlumaUrl"
+                  type="url"
+                  placeholder="填写完整的 http:// 或 https:// 地址"
+                />
+              </div>
+            </section>
+            <section class="settings-section">
+              <div class="settings-section-title">
+                <h2>剧本与日志</h2>
+                <p>本地读取，专注内容。</p>
+              </div>
+              <div class="settings-fields">
+                <label for="databasePath"
+                  >剧本数据库<span
+                    >以只读模式读取 HDS Interlude 数据表</span
+                  ></label
+                >
+                <div class="path-field">
+                  <input
+                    id="databasePath"
+                    name="databasePath"
+                    autocomplete="off"
+                  /><button
+                    class="button"
+                    type="button"
+                    data-pick="databasePath"
+                    data-kind="database"
+                  >
+                    <svg><use href="#i-folder" /></svg>选择文件
+                  </button>
+                </div>
+                <label for="logEncoding"
+                  >日志编码<span
+                    >如日志出现乱码，可改为 GB18030 后重启服务</span
+                  ></label
+                ><select id="logEncoding" name="logEncoding">
+                  <option value="utf-8">UTF-8</option>
+                  <option value="gb18030">GB18030 / GBK</option>
+                </select>
+              </div>
+            </section>
+            <div class="settings-note">
+              <svg><use href="#i-check" /></svg
+              >设置仅保存在本机。程序目录变更将在下一次启动时生效。
+            </div>
+          </form>
+          <section class="setup-card about-card" aria-labelledby="about-title">
+            <h2 id="about-title">关于与项目鸣谢</h2>
+            <p>HDS-Interlude Launcher · 作者 Reversed-Future · AGPL-3.0-only</p>
+            <p>
+              如果这些项目对你有帮助，欢迎给本启动器和上游仓库一个
+              Star，也欢迎提交 Issue 和 Pull Request，一起完善使用体验。
+            </p>
+            <div id="about-projects"></div>
+            <p>
+              各项目独立维护，遵循各自许可。SnowLuma
+              为源码可见项目，采用非商业许可；QQ
+              是腾讯的专有软件。本启动器不附带这些程序的安装包。
+            </p>
+          </section>
+        </section>
+        <section
+          class="page"
+          id="page-setup"
+          aria-labelledby="setup-title"
+          hidden
+        >
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">INSTALL &amp; UPDATE</div>
+              <h1 id="setup-title">安装与更新</h1>
+              <p>从环境准备到插件更新，每一步都有记录。</p>
+            </div>
+            <button class="button" id="inspect-environment">
+              检测本机环境
+            </button>
+          </div>
+          <div
+            class="setup-environment"
+            id="setup-environment"
+            aria-live="polite"
+          >
+            <div class="env-item" data-env="node">
+              <strong>Node.js</strong><span>尚未检测</span>
+            </div>
+            <div class="env-item" data-env="qq">
+              <strong>QQ</strong><span>尚未检测</span>
+            </div>
+            <div class="env-item" data-env="snowluma">
+              <strong>SnowLuma</strong><span>尚未检测</span>
+            </div>
+            <div class="env-item" data-env="koishi">
+              <strong>Koishi / HDSI</strong><span>尚未检测</span>
+            </div>
+          </div>
+          <section
+            class="setup-card installation-readiness"
+            id="installation-readiness"
+            aria-live="polite"
+          >
+            <div class="readiness-heading">
+              <h2 id="readiness-title">正在检查安装情况</h2>
+              <button
+                class="button primary"
+                data-go="guide"
+                data-requires-ready
+                disabled
+              >
+                开始配置
+              </button>
+            </div>
+            <ul id="readiness-list"></ul>
+          </section>
+          <section class="setup-card launcher-update-card">
+            <div class="readiness-heading">
+              <h2>启动器更新</h2>
+              <span id="launcher-current-version"></span>
+            </div>
+            <p id="launcher-update-status" role="status">启动时自动检查更新</p>
+            <p>
+              从本项目 GitHub Release
+              获取更新。下载校验后重启生效，已有配置保留。
+            </p>
+            <pre id="launcher-update-notes" hidden></pre>
+            <progress
+              id="launcher-update-progress"
+              aria-label="启动器更新下载进度"
+              hidden
+            ></progress>
+            <div class="actions">
+              <button class="button" id="check-launcher-update">
+                检查启动器更新</button
+              ><button
+                class="button primary"
+                id="install-launcher-update"
+                hidden
+              >
+                下载并准备更新</button
+              ><button class="button" id="cancel-launcher-update" hidden>
+                取消下载</button
+              ><button
+                class="button primary"
+                id="restart-launcher-update"
+                hidden
+              >
+                重启并更新</button
+              ><button class="button" id="open-launcher-repo">
+                GitHub · Issue / PR
+              </button>
+            </div>
+          </section>
+          <div class="setup-layout">
+            <div class="setup-main">
+              <section class="setup-card">
+                <div class="setup-step">HDSI · 插件更新</div>
+                <h2>检查 beta，或导入安装包</h2>
+                <p id="installed-version">已安装版本：尚未检测</p>
+                <p>
+                  beta 与 latest
+                  是不同发布通道。检查后显示目标版本，点击安装才会更新。
+                </p>
+                <div class="actions">
+                  <button
+                    class="button primary"
+                    id="check-beta"
+                    data-setup-mutation
+                  >
+                    检查 beta 更新</button
+                  ><button class="button" data-download="interlude">
+                    打开 Gitee 发布页</button
+                  ><button class="button" id="check-gitee">读取发布列表</button>
+                </div>
+                <div id="release-list" hidden></div>
+                <div class="drop-zone" id="tgz-drop">
+                  <strong>将 HDSI 的 .tgz 文件拖到这里</strong>
+                  <p>也可以选择文件。会读取真实包名、版本与校验值。</p>
+                  <button class="button" id="pick-tgz" data-setup-mutation>
+                    选择 .tgz 安装包
+                  </button>
+                  <input id="tgz-file" type="file" accept=".tgz" hidden />
+                </div>
+                <div
+                  class="package-plan"
+                  id="package-plan"
+                  hidden
+                  aria-live="polite"
+                >
+                  <strong id="plan-version"></strong>
+                  <p id="plan-detail"></p>
+                  <code id="plan-command"></code>
+                  <p class="setup-path" id="plan-target"></p>
+                  <p>
+                    请先停止
+                    Koishi。安装前自动备份配置与依赖清单；完成后手动启动服务。
+                  </p>
+                  <button
+                    class="button primary"
+                    id="install-package"
+                    data-setup-mutation
+                  >
+                    安装所选版本
+                  </button>
+                </div>
+              </section>
+              <details class="setup-card setup-disclosure" open>
+                <summary>首次安装 · 按步骤准备环境</summary>
+                <p>
+                  已有程序可直接在“设置”中填写目录。以下操作只在点击对应按钮后执行。
+                </p>
+                <h3>01 / Node.js LTS</h3>
+                <p>
+                  使用 winget 安装 Node.js LTS，安装后自动刷新环境并检测
+                  npm，通常无需重启电脑。若检测未通过，请重新打开启动器；未安装
+                  winget 时可使用官网 MSI。
+                </p>
+                <div class="actions">
+                  <button
+                    class="button primary"
+                    id="install-node"
+                    data-setup-mutation
+                  >
+                    一键安装 Node.js LTS
+                  </button>
+                  <button
+                    class="button"
+                    id="refresh-environment"
+                    data-setup-mutation
+                  >
+                    刷新环境并检测
+                  </button>
+                  <button class="button" data-download="node">
+                    Node.js 官网</button
+                  ><button class="button" data-installer="node">
+                    运行 Node.js 安装器
+                  </button>
+                </div>
+                <h3>02 / QQ NT</h3>
+                <p>
+                  自动从 QQ
+                  官网获取当前版本安装包并打开安装器。安装完成后在“设置”中选择实际
+                  QQ.exe。账号登录在 QQ 内完成。
+                </p>
+                <div class="actions">
+                  <button
+                    class="button primary"
+                    id="install-official-qq"
+                    data-setup-mutation
+                  >
+                    从官网下载并安装 QQ
+                  </button>
+                  <button class="button" data-download="qq">QQ 官网</button
+                  ><button class="button" data-installer="qq">
+                    运行 QQ 安装器</button
+                  ><button class="button" data-go="settings">
+                    填写程序目录
+                  </button>
+                </div>
+                <h3>03 / SnowLuma Windows 完整版</h3>
+                <p>
+                  自动获取官方最新 Windows
+                  完整包，校验后解压到新目录并保存路径。首次登录密码请在启动日志中查看。
+                </p>
+                <div class="actions">
+                  <button class="button" data-download="snowluma">
+                    SnowLuma 发布页</button
+                  ><button class="button" id="pick-snow">选择 ZIP</button>
+                </div>
+                <p class="setup-path" id="snow-file">尚未选择安装包</p>
+                <label for="snow-parent">安装到此父目录下</label>
+                <div class="setup-input-row">
+                  <input
+                    id="snow-parent"
+                    readonly
+                    placeholder="选择父目录"
+                  /><button class="button" data-parent="snow-parent">
+                    浏览
+                  </button>
+                </div>
+                <label for="snow-name">新目录名称</label
+                ><input id="snow-name" value="SnowLuma" />
+                <div class="actions">
+                  <button
+                    class="button primary"
+                    id="install-official-snow"
+                    data-setup-mutation
+                  >
+                    从官方下载安装
+                  </button>
+                  <button class="button" id="install-snow" data-setup-mutation>
+                    使用已选 ZIP 安装
+                  </button>
+                </div>
+                <h3>04 / Koishi 项目</h3>
+                <p>
+                  自动运行 Koishi
+                  官方脚手架创建项目并安装依赖，完成后保存路径。已有目录不会被覆盖。
+                </p>
+                <label for="koishi-parent">项目父目录</label>
+                <div class="setup-input-row">
+                  <input
+                    id="koishi-parent"
+                    readonly
+                    placeholder="选择父目录"
+                  /><button class="button" data-parent="koishi-parent">
+                    浏览
+                  </button>
+                </div>
+                <label for="koishi-name">新目录名称</label
+                ><input id="koishi-name" value="koishi" />
+                <div class="actions">
+                  <button class="button" id="create-koishi" data-setup-mutation>
+                    自动安装 Koishi
+                  </button>
+                </div>
+                <h3>05 / 基础插件与 HDSI</h3>
+                <p>
+                  安装 HDSI 时会自动依次补齐完整 Console 模块、OneBot 适配器及
+                  SQLite，再安装所选 beta 或 .tgz
+                  包。任一步失败即停止；也可单独补齐基础插件。
+                </p>
+                <div class="actions">
+                  <button
+                    class="button"
+                    id="install-dependencies"
+                    data-setup-mutation
+                  >
+                    安装基础插件</button
+                  ><button
+                    class="button"
+                    data-go="guide"
+                    data-requires-ready
+                    disabled
+                  >
+                    继续配置向导
+                  </button>
+                </div>
+              </details>
+              <section class="setup-card">
+                <h2>配置完成后</h2>
+                <ol class="setup-checklist">
+                  <li>打开 QQ，登录机器人账号。</li>
+                  <li>
+                    启动 SnowLuma，在 WebUI 中注入 QQ，并按教程设置 WebSocket
+                    服务。
+                  </li>
+                  <li>启动 Koishi，确认连接 Token、端口与 SnowLuma 一致。</li>
+                  <li>在聊天中运行 interlude.doctor 检查，再开始故事。</li>
+                </ol>
+                <div class="actions">
+                  <button class="button" data-go="dashboard">返回启动台</button
+                  ><button class="button" data-go="webui">打开 WebUI</button>
+                </div>
+              </section>
+            </div>
+            <aside class="setup-card install-log-card" aria-label="安装日志">
+              <div class="install-log-heading">
+                <h2>操作日志</h2>
+                <button class="button small" id="copy-setup-logs">复制</button>
+              </div>
+              <div id="setup-status" role="status">等待操作</div>
+              <div id="download-panel" hidden>
+                <p id="download-label"></p>
+                <progress
+                  id="download-progress"
+                  aria-label="安装包下载进度"
+                ></progress>
+                <div class="download-controls">
+                  <span id="download-size"></span
+                  ><button class="button small" id="cancel-download">
+                    取消下载
+                  </button>
+                </div>
+              </div>
+              <pre id="setup-log" tabindex="0" aria-label="安装操作输出">
+安装进度、npm 输出与错误会显示在这里。</pre
+              >
+            </aside>
+          </div>
+        </section>
+        <section
+          class="page"
+          id="page-guide"
+          aria-labelledby="guide-title"
+          hidden
+        >
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">GUIDED CONFIGURATION</div>
+              <h1 id="guide-title">配置向导</h1>
+              <p>把连接、模型与角色设定好，让故事开始。</p>
+            </div>
+          </div>
+          <div class="guide-toolbar">
+            <p class="setup-hint">
+              非密钥草稿自动保存。Token 与 API Key 仅保留在本次窗口中。
+            </p>
+            <button class="button primary" id="preview-yaml">
+              预览生成配置
+            </button>
+          </div>
+          <div
+            class="wizard-steps"
+            id="wizard-steps"
+            aria-label="配置步骤"
+          ></div>
+          <div class="wizard-layout">
+            <div>
+              <div class="wizard-section-heading">
+                <div>
+                  <h2 id="wizard-step-title"></h2>
+                  <p id="wizard-step-description"></p>
+                </div>
+                <span id="wizard-position"></span>
+              </div>
+              <div id="wizard-content"></div>
+              <div
+                id="wizard-errors"
+                class="wizard-errors"
+                role="alert"
+                hidden
+              ></div>
+              <div class="wizard-footer">
+                <button class="button" id="wizard-prev">上一步</button
+                ><button class="button primary" id="wizard-next">下一步</button>
+              </div>
+            </div>
+            <aside class="wizard-context">
+              <span class="setup-step">配置前准备</span>
+              <h2>从这里接着做</h2>
+              <p>完成程序安装和 HDSI 插件安装后，再填写本向导。</p>
+              <button class="button" data-go="setup">安装与更新</button>
+              <div class="wizard-context-divider"></div>
+              <h2>已有配置？</h2>
+              <p>
+                这里生成完整的 koishi.yml。已有项目可以先导出对照，或打开 WebUI
+                修改当前设置。
+              </p>
+              <button class="button" data-go="webui">打开 WebUI</button>
+              <div class="wizard-context-divider"></div>
+              <p>
+                字段与默认值依据你提供的 rc28 配置教程。写入前会备份原配置。
+              </p>
+            </aside>
+          </div>
+        </section>
+      </main>
+      <dialog class="yaml-dialog" id="yaml-dialog">
+        <h2>预览 koishi.yml</h2>
+        <p class="setup-hint">
+          这里可能包含 API Key 和连接 Token。写入前自动将原配置备份为 Koishi
+          根目录下的 koishi.yml.bak，再替换为生成的配置。
+        </p>
+        <div id="yaml-issues"></div>
+        <textarea
+          id="yaml-preview"
+          readonly
+          aria-label="生成的 Koishi YAML 配置"
+        ></textarea>
+        <div class="actions">
+          <button class="button" id="close-yaml">返回填写</button
+          ><button class="button" id="export-yaml">导出文件</button
+          ><button class="button primary" id="write-yaml" data-setup-mutation>
+            备份并写入 Koishi
+          </button>
+        </div>
+      </dialog>
+      <div class="notice" id="notice" role="status" aria-live="polite" hidden>
+        <span id="notice-text"></span
+        ><button id="dismiss-notice" aria-label="关闭提示">×</button>
+      </div>
+    </div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
