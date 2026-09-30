@@ -222,6 +222,17 @@ small {
   display: flex;
   justify-content: space-between;
 }
+.version {
+  align-items: center;
+  gap: 8px;
+}
+.version-name {
+  line-height: 1.45;
+}
+.version #app-version {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .main-shell {
   margin-left: 210px;
 }

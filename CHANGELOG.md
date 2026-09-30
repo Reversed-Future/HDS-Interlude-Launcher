@@ -10,3 +10,4 @@
 - Embedding 专用模型提示及独占用途约束。
 - 内置日志、WebUI、只读剧本书架与 `<sep/>` 分段。
 - 设置页加入项目鸣谢、GitHub / Gitee Star 星数、Issue 和 PR 入口。
+- Star 组件统一对齐，侧栏显示完整 Launcher 名称，窗口与 EXE 使用独立图标。

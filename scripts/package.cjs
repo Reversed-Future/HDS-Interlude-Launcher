@@ -30,10 +30,19 @@ fs.renameSync(
   path.join(destination, path.basename(electronExecutable)),
   path.join(destination, "HDS-Interlude Launcher.exe"),
 );
+require("node:child_process").execFileSync(
+  process.execPath,
+  [
+    path.join(__dirname, "stamp-icon.cjs"),
+    path.join(destination, "HDS-Interlude Launcher.exe"),
+  ],
+  { windowsHide: true, stdio: "inherit" },
+);
 const appRoot = path.join(destination, "resources", "app");
 fs.mkdirSync(appRoot, { recursive: true });
 for (const file of [
   "src",
+  "assets",
   "ui",
   "package.json",
   "README.md",

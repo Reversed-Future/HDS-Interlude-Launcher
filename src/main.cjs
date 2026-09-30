@@ -10,6 +10,8 @@ const { UpdateService } = require("./update/service.cjs");
 const { fetchOfficial } = require("./setup/electron-fetch.cjs");
 
 app.setName("HDS-Interlude Launcher");
+if (process.platform === "win32")
+  app.setAppUserModelId("ReversedFuture.HDSInterludeLauncher");
 // Preserve the existing profile after the visible product rename.
 app.setPath("userData", path.join(app.getPath("appData"), "InterludeLauncher"));
 // An explicit isolated profile is used by the desktop integration tests.
@@ -73,6 +75,7 @@ else {
         minWidth: 980,
         minHeight: 690,
         title: "HDS-Interlude Launcher",
+        icon: path.join(__dirname, "../assets/icon.ico"),
         backgroundColor: "#f8f9fb",
         show: false,
         webPreferences: {
