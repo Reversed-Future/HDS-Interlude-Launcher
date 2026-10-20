@@ -89,7 +89,20 @@ const before = fs.readFileSync(path.join(profile, "settings.json"));
     await page.locator("#install-launcher-update").click();
     await page
       .locator('#launcher-update-status[data-phase="ready"]')
-      .waitFor({ timeout: 120000 });
+      .waitFor({ state: "attached", timeout: 120000 });
+    assert.equal(
+      await page.locator("#page-setup").isVisible(),
+      true,
+      JSON.stringify(
+        await page.evaluate(() => ({
+          breadcrumb: document.querySelector("#breadcrumb").textContent,
+          hidden: [...document.querySelectorAll(".page")].map((x) => [
+            x.id,
+            x.hidden,
+          ]),
+        })),
+      ),
+    );
     await page.locator("#restart-launcher-update").click();
     const restarted = await app.evaluate(() => ({
       options: globalThis.testRelaunch,
