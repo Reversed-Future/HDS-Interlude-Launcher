@@ -66,7 +66,7 @@ async function run() {
     await page.locator('[data-route="guide"]').click();
     await page
       .locator("#readiness-title")
-      .filter({ hasText: "请先完成全部安装" })
+      .filter({ hasText: "还有项目需要准备" })
       .waitFor();
     assert.equal(await page.locator("#page-guide").isVisible(), false);
     assert.equal(
@@ -90,6 +90,7 @@ async function run() {
     await app.evaluate(({ shell }) => {
       shell.openPath = async () => "";
     });
+    await page.locator("details.setup-disclosure > summary").click();
     await page.locator("#install-official-qq").click();
     await page.locator("#download-panel").waitFor({ state: "visible" });
     await page

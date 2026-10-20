@@ -13,7 +13,11 @@ fs.writeFileSync(
     Object.fromEntries(
       projects.map((project, i) => [
         project.id,
-        { count: [0, 43, 6237, 1366, 51, 123339][i], checkedAt: Date.now() },
+        {
+          count: [0, 43, 6237, 1366, 51, 123339][i],
+          checkedAt: Date.now(),
+          url: project.url,
+        },
       ]),
     ),
   ),
@@ -25,6 +29,7 @@ fs.writeFileSync(
   });
   try {
     const page = await app.firstWindow();
+    page.setDefaultTimeout(30000);
     await page.locator('[data-route="settings"]').click();
     await page
       .locator('[data-project-stars="launcher"]')

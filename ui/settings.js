@@ -22,6 +22,13 @@ export function initSettings(onSave) {
         open.type = "button";
         open.onclick = () => action(open, () => api.openProject(project.id));
         row.append(body, open);
+        if (project.backupUrl) {
+          const backup = element("button", "text-button", "Gitee 备用仓库");
+          backup.type = "button";
+          backup.onclick = () =>
+            action(backup, () => api.openDownload("interludeBackup"));
+          body.append(backup);
+        }
         $("#about-projects").append(row);
       }
       return api.projectStars().then((counts) => {

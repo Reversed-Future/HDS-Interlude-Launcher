@@ -74,7 +74,7 @@ export function providerEditor(data, changed) {
               mode.label,
             ]),
           }),
-          f("apiKey", "API Key", {
+          f("apiKey", "API Key（服务商密钥）", {
             type: "password",
             hint: MODES[provider.mode].reg,
           }),
@@ -87,7 +87,7 @@ export function providerEditor(data, changed) {
                 : "填写实际可用的模型名称",
               hint: provider.useEmbedding
                 ? "必须是专用 embedding（文本向量）模型，普通聊天模型不能用于此功能。"
-                : undefined,
+                : "从服务商的模型列表复制完整名称，请不要填写角色名字。",
             },
           ),
           ...(provider.mode === "openai-compatible"
@@ -105,12 +105,12 @@ export function providerEditor(data, changed) {
       );
       const roles = element("div", "provider-roles");
       for (const [key, label] of [
-        ["useMain", "主叙事"],
-        ["useCompaction", "后台压缩"],
-        ["useAlter", "Alter 分析"],
+        ["useMain", "聊天与剧情（主叙事）"],
+        ["useCompaction", "整理历史记录（压缩）"],
+        ["useAlter", "角色分析（Alter）"],
         ["useEmbedding", "Embedding（仅向量检索）"],
         ["useStickers", "表情包描述"],
-        ["useVision", "侧端识图"],
+        ["useVision", "独立图片识别"],
       ]) {
         const role = f(key, label, { type: "checkbox" });
         if (provider.useEmbedding && key !== "useEmbedding")
@@ -121,7 +121,7 @@ export function providerEditor(data, changed) {
         element(
           "p",
           "wizard-field-hint",
-          "这条连接负责哪些任务？第一条默认承担主叙事、压缩与 Alter。",
+          "第一次使用可保留默认勾选。需要图片或向量检索时，再确认模型支持对应功能。",
         ),
         roles,
         element(

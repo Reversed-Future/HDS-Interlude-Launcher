@@ -1,10 +1,13 @@
 const cheerio = require("cheerio");
 const RELEASES_URL = "https://gitee.com/MomoiCore/hds-interlude/releases";
+const GITHUB_RELEASES =
+  "https://github.com/ISEKAI-MomoiCore/HDS-Interlude/releases";
 const LINKS = Object.freeze({
   node: "https://nodejs.org/zh-cn",
   qq: "https://im.qq.com/pc",
   snowluma: "https://github.com/SnowLuma/SnowLuma/releases",
-  interlude: RELEASES_URL,
+  interlude: GITHUB_RELEASES,
+  interludeBackup: RELEASES_URL,
 });
 function parseReleases(html) {
   const $ = cheerio.load(html);
@@ -33,7 +36,7 @@ function parseReleases(html) {
     );
   return rows;
 }
-async function releases(fetcher = fetch) {
+async function giteeReleases(fetcher) {
   const response = await fetcher(RELEASES_URL, {
     signal: AbortSignal.timeout(20000),
   });
@@ -42,5 +45,55 @@ async function releases(fetcher = fetch) {
   const html = await response.text();
   if (html.length > 8 * 1024 * 1024) throw new Error("发布页响应过大。");
   return parseReleases(html);
+}
+async function releases(fetcher = fetch) {
+  try {
+    const response = await fetcher(
+      "https://api.github.com/repos/ISEKAI-MomoiCore/HDS-Interlude/releases",
+      {
+        headers: {
+          "User-Agent": "HDS-Interlude-Launcher",
+          Accept: "application/vnd.github+json",
+        },
+        signal: AbortSignal.timeout(20000),
+      },
+    );
+    if (!response.ok) throw new Error(`GitHub HTTP ${response.status}`);
+    const text = await response.text();
+    if (text.length > 8 * 1024 * 1024) throw new Error("发布信息过大");
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error("发布信息格式不正确");
+    const rows = data
+      .filter((r) => !r.draft)
+      .flatMap((r) =>
+        (r.assets || [])
+          .filter(
+            (a) =>
+              typeof a.name === "string" &&
+              a.name.endsWith(".tgz") &&
+              typeof a.browser_download_url === "string" &&
+              a.browser_download_url.startsWith(GITHUB_RELEASES + "/download/"),
+          )
+          .map((a) => ({
+            tag: r.tag_name,
+            name: a.name,
+            url: a.browser_download_url,
+            source: "GitHub",
+          })),
+      );
+    if (rows.length) return rows;
+  } catch {
+    /* Gitee remains available when GitHub is unavailable. */
+  }
+  try {
+    return (await giteeReleases(fetcher)).map((r) => ({
+      ...r,
+      source: "Gitee（备用）",
+    }));
+  } catch {
+    throw new Error(
+      "暂时无法读取插件发布列表。可打开 GitHub 发布页，或使用 Gitee 备用入口下载 .tgz 后导入。",
+    );
+  }
 }
 module.exports = { LINKS, RELEASES_URL, parseReleases, releases };

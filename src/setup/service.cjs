@@ -16,6 +16,7 @@ const { portInUse } = require("../processes.cjs");
 const { extractSnow } = require("./archives.cjs");
 const { writeConfiguration } = require("./configuration.cjs");
 const { checkInstallation } = require("./readiness.cjs");
+const { markConfiguration, needsConfiguration } = require("./progress.cjs");
 
 // Exact package list in the user's rc28 beginner guide.
 const BASE_PACKAGES = [
@@ -234,6 +235,7 @@ class SetupService extends EventEmitter {
         (line) => this.log(line),
       );
       await this.npm(["install"], dir, (line) => this.log(line));
+      markConfiguration(dir, "pending");
       const config = this.configStore.load();
       const result = this.configStore.save({
         ...config,
@@ -278,6 +280,7 @@ class SetupService extends EventEmitter {
       const config = this.configStore.load();
       await this.assertStopped(config);
       const result = writeConfiguration(config.koishiDir, text);
+      markConfiguration(config.koishiDir, "saved");
       this.log("原文件备份：" + result.backup);
       if (result.bak) this.log("根目录备份：" + result.bak);
       if (result.stickers) this.log("表情包目录已准备：" + result.stickers);
@@ -306,6 +309,15 @@ class SetupService extends EventEmitter {
     const readiness = checkInstallation(config, node, BASE_PACKAGES);
     return {
       readiness,
+      paths: {
+        koishi: !!config.koishiDir,
+        snowluma: !!config.snowlumaDir,
+        qq: !!config.qqExe,
+      },
+      configured:
+        !!config.koishiDir &&
+        !needsConfiguration(config.koishiDir) &&
+        fs.existsSync(path.join(config.koishiDir, "koishi.yml")),
       node,
       installed: config.koishiDir ? installedVersion(config.koishiDir) : null,
       koishi: readiness.checks.find((item) => item.id === "koishi").ready,

@@ -100,6 +100,8 @@ function connectionStep() {
   generate.id = "generate-token";
   section.append(
     actions(
+      button("打开 QQ 登录", () => api.start("qq")),
+      button("启动 SnowLuma", () => api.start("snowluma")),
       generate,
       button("复制 Token", async () => {
         if (!data.wsToken) throw new Error("请先填写或生成 Token。");
@@ -142,8 +144,8 @@ function connectionStep() {
 }
 function modelStep() {
   const section = card(
-    "模型连接",
-    "支持多条连接。按列表顺序尝试主叙事模型；可以将压缩、Alter 和图片理解分配给不同模型。",
+    "填写模型服务信息",
+    "先在服务商处取得 API Key 和模型名称，再粘贴到下方。首次使用填好一条连接即可，其他用途可保留默认值。",
   );
   section.append(providerEditor(data, changed));
   const formats = card(
@@ -389,10 +391,7 @@ export function initGuide() {
   steps.forEach(([title], index) => {
     const node = element("button", "wizard-step");
     node.dataset.configStep = index;
-    node.append(
-      element("span", "step-number", String(index + 1)),
-      element("span", "", title),
-    );
+    node.append(element("span", "", title));
     node.onclick = () => {
       currentStep = index;
       showErrors = false;
@@ -430,6 +429,7 @@ export function initGuide() {
       const result = await api.writeYaml($("#yaml-preview").value);
       if (result) {
         $("#yaml-dialog").close();
+        route("dashboard");
         notice(
           result.bak
             ? "配置已写入 Koishi 根目录，原配置已备份为 koishi.yml.bak。"

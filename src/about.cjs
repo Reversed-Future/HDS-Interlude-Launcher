@@ -9,7 +9,8 @@ module.exports = [
     id: "hdsi",
     name: "HDS-Interlude",
     description: "叙事与长期记忆插件 · AGPL-3.0",
-    url: "https://gitee.com/MomoiCore/HDS-Interlude",
+    url: "https://github.com/ISEKAI-MomoiCore/HDS-Interlude",
+    backupUrl: "https://gitee.com/MomoiCore/HDS-Interlude",
   },
   {
     id: "koishi",

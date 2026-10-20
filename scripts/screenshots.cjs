@@ -42,6 +42,10 @@ fs.mkdirSync(output, { recursive: true });
       .locator("#readiness-title")
       .filter({ hasText: "安装已完成" })
       .waitFor();
+    await page.evaluate(() => {
+      document.querySelector("#assistant-install-root").textContent =
+        "C:\\HDS-Interlude";
+    });
     await page.screenshot({ path: path.join(output, "setup.png") });
     await page.locator('[data-route="guide"]').click();
     await page.locator('[data-config-key="botQQ"]').fill("123456789");

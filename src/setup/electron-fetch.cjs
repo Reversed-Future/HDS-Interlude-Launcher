@@ -2,10 +2,16 @@ const { net } = require("electron");
 
 // net.fetch cancels manual redirects instead of exposing their response. Use the
 // documented ClientRequest redirect event while preserving Chromium/system proxy support.
-function fetchOfficial(url, options = {}) {
-  if (options.redirect !== "manual") return net.fetch(url, options);
+function fetchOfficial(url, options = {}, session) {
+  if (options.redirect !== "manual")
+    return (session || net).fetch(url, options);
   return new Promise((resolve, reject) => {
-    const request = net.request({ url, method: "GET", redirect: "manual" });
+    const request = net.request({
+      url,
+      method: "GET",
+      redirect: "manual",
+      ...(session ? { session } : {}),
+    });
     let controller;
     let ended = false;
     const fail = (error) => {

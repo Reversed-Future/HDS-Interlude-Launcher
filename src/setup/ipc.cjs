@@ -65,7 +65,9 @@ function registerSetupIPC(handle, { window, setup }) {
   handle("setup:dependencies", () => setup.installDependencies());
   handle("setup:create-koishi", (input) => setup.createKoishi(input));
   handle("setup:install-snow", (input) => setup.installSnow(input));
-  handle("setup:releases", () => releases(net.fetch));
+  handle("setup:releases", () =>
+    releases(require("../update/network.cjs").fetchUpdate),
+  );
   handle("setup:open-link", (id) => {
     if (!Object.hasOwn(LINKS, id)) throw new Error("未知下载页面。");
     return shell.openExternal(LINKS[id]);

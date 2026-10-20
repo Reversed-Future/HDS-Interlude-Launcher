@@ -23,7 +23,8 @@ class StarCounts {
     }
     const results = await Promise.all(
       projects.map(async (project) => {
-        const previous = cache[project.id];
+        const previous =
+          cache[project.id]?.url === project.url ? cache[project.id] : null;
         if (
           previous &&
           Number.isSafeInteger(previous.count) &&
@@ -57,7 +58,11 @@ class StarCounts {
             throw new Error("invalid count");
           return [
             project.id,
-            { count: data.stargazers_count, checkedAt: Date.now() },
+            {
+              count: data.stargazers_count,
+              checkedAt: Date.now(),
+              url: project.url,
+            },
           ];
         } catch {
           return [

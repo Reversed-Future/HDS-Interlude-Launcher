@@ -70,7 +70,7 @@ export function updateDashboard() {
     config.qqExe,
   ].every(Boolean)
     ? "启动路径已配置 · 设置保存在本机"
-    : "首次使用，请先在设置中配置程序路径";
+    : "首次使用，请到“安装与更新”识别已有程序或开始安装";
 }
 
 function renderLogs() {
@@ -125,6 +125,20 @@ export function initDashboard(openWeb) {
     action(
       event.currentTarget,
       async () => {
+        if (
+          ![
+            store.config.koishiDir,
+            store.config.snowlumaDir,
+            store.config.qqExe,
+          ].every(Boolean)
+        ) {
+          document.dispatchEvent(
+            new CustomEvent("launcher:navigate", {
+              detail: { route: "setup" },
+            }),
+          );
+          return;
+        }
         await api.startAll();
         updateDashboard();
       },

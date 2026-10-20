@@ -7,7 +7,7 @@ const { WebUIManager } = require("./webviews.cjs");
 const { registerIPC } = require("./ipc.cjs");
 const { readUpdateTarget } = require("./update/bootstrap.cjs");
 const { UpdateService } = require("./update/service.cjs");
-const { fetchOfficial } = require("./setup/electron-fetch.cjs");
+const { fetchUpdate } = require("./update/network.cjs");
 
 app.setName("HDS-Interlude Launcher");
 if (process.platform === "win32")
@@ -67,7 +67,7 @@ else {
       const updater = new UpdateService(setup, {
         profile: app.getPath("userData"),
         version: app.getVersion(),
-        fetcher: fetchOfficial,
+        fetcher: fetchUpdate,
       });
       window = new BrowserWindow({
         width: 1260,

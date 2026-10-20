@@ -17,6 +17,12 @@ async function json(fetcher, url) {
     signal: AbortSignal.timeout(30000),
   });
   if (response.status === 404) throw new Error("仓库尚未发布可用版本。");
+  if ([403, 429].includes(response.status))
+    throw new Error(
+      response.headers.get("x-ratelimit-remaining") === "0"
+        ? "GitHub 更新接口暂时限流，自动重试仍未成功。请稍后重试，或打开项目仓库下载新版；现有程序仍可使用。"
+        : `GitHub 拒绝了更新请求（HTTP ${response.status}）。请检查网络或代理，或打开项目仓库下载新版。`,
+    );
   if (!response.ok)
     throw new Error(`更新检查失败（HTTP ${response.status}），请稍后重试。`);
   const text = await response.text();

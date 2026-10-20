@@ -66,7 +66,7 @@ function registerIPC({
   handle("about:projects", () => require("./about.cjs"));
   const stars = new (require("./stars.cjs").StarCounts)(
     app.getPath("userData"),
-    require("./setup/electron-fetch.cjs").fetchOfficial,
+    require("./update/network.cjs").fetchUpdate,
   );
   handle("about:stars", () => stars.load());
   handle("about:open", (id) => {

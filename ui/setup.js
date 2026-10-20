@@ -1,4 +1,10 @@
 import { $, $$, api, store, action, notice, element } from "./shared.js";
+import {
+  initAssistant,
+  updateAssistant,
+  assistantBusy,
+  reveal,
+} from "./setup-assistant.js";
 let selectedPlan = null;
 let snowFile = "";
 let busy = false;
@@ -20,6 +26,7 @@ function renderLogs() {
 }
 function stateChanged(state) {
   busy = state.busy;
+  assistantBusy(busy);
   $("#setup-status").textContent = state.label;
   $("#setup-status").dataset.phase = state.phase;
   $("#download-panel").hidden = !state.download;
@@ -51,17 +58,32 @@ function stateChanged(state) {
 export async function inspectEnvironment() {
   const env = await api.environment();
   ready = env.readiness.ready;
+  updateAssistant(env, busy);
   $("#installation-readiness").dataset.ready = String(ready);
   $("#readiness-title").textContent = ready
     ? "安装已完成，可以开始配置"
-    : "请先完成全部安装";
+    : "还有项目需要准备";
   $("#readiness-list").replaceChildren(
     ...env.readiness.checks.map((item) => {
       const row = element("li", item.ready ? "ready" : "missing");
       row.append(
         element("strong", "", `${item.ready ? "✓" : "○"} ${item.label}`),
       );
-      if (!item.ready) row.append(element("span", "", item.detail));
+      if (!item.ready) {
+        const detail = element("details", "check-detail");
+        detail.append(
+          element("summary", "", "查看原因"),
+          element(
+            "span",
+            "",
+            !env.paths.koishi &&
+              ["console", "onebot", "sqlite", "hdsi"].includes(item.id)
+              ? "还未选择 Koishi 目录，暂时无法检查。请先识别已有程序或安装 Koishi。"
+              : item.detail,
+          ),
+        );
+        row.append(detail);
+      }
       return row;
     }),
   );
@@ -76,12 +98,14 @@ export async function inspectEnvironment() {
     card.dataset.ready = String(ready);
     card.querySelector("span").textContent =
       id === "node"
-        ? env.node.version || "请安装并重启"
+        ? env.node.version || "运行环境未就绪"
         : ready
           ? id === "koishi"
             ? env.installed || "项目已配置"
             : "路径已配置"
-          : "请安装或设置路径";
+          : env.paths[id]
+            ? "已保存路径，但文件不完整"
+            : "尚未选择程序位置";
     card.title = id === "node" ? env.node.error || env.node.node : "";
   }
   return env;
@@ -89,6 +113,7 @@ export async function inspectEnvironment() {
 function showPlan(plan) {
   selectedPlan = plan;
   $("#package-plan").hidden = false;
+  reveal($("#package-plan"));
   $("#plan-version").textContent =
     `${plan.installed || "未安装"} → ${plan.version}`;
   $("#plan-detail").textContent =
@@ -111,6 +136,7 @@ async function inspectFile(file) {
   showPlan(await api.inspectPackage(file));
 }
 export async function initSetup(onConfig) {
+  initAssistant(onConfig, inspectEnvironment);
   api.onSetupState(stateChanged);
   api.onSetupLog((line) => {
     logLines.push(line);
@@ -123,6 +149,7 @@ export async function initSetup(onConfig) {
   });
   stateChanged(await api.setupState());
   const parent = await api.installRoot();
+  $("#assistant-install-root").textContent = parent;
   $("#snow-parent").value = parent;
   $("#koishi-parent").value = parent;
   $("#install-node").onclick = (event) =>
@@ -183,7 +210,7 @@ export async function initSetup(onConfig) {
         selectedPlan = null;
         $("#package-plan").hidden = true;
         await inspectEnvironment();
-        notice("HDSI 已安装。可回到启动台启动 Koishi。");
+        notice("HDSI 已安装。新用户可开始填写配置，已有配置可直接启动。");
       }
     });
   $$("[data-download]").forEach((button) => {
@@ -289,13 +316,15 @@ export async function initSetup(onConfig) {
       try {
         const rows = await api.releases();
         list.replaceChildren(
-          ...rows.map((row) => element("div", "", `${row.tag} · ${row.name}`)),
+          ...rows.map((row) =>
+            element("div", "", `${row.source} · ${row.tag} · ${row.name}`),
+          ),
         );
         list.append(
           element(
             "p",
             "setup-hint",
-            "请在 Gitee 发布页下载所需附件，再拖入上方区域。实际版本以安装包内容为准。",
+            "优先使用 GitHub 发布页，Gitee 为备用入口。下载 .tgz 后拖入上方区域。实际版本以安装包内容为准。",
           ),
         );
       } catch (error) {

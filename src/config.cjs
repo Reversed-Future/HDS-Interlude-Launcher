@@ -44,10 +44,13 @@ class ConfigStore {
   load() {
     const file = fs.existsSync(this.file) ? this.file : this.seedFile;
     if (!file || !fs.existsSync(file)) return { ...defaults };
-    return validateConfig({
+    const config = validateConfig({
       ...defaults,
       ...JSON.parse(fs.readFileSync(file, "utf8")),
     });
+    // Persist the developer's explicit seed once; public builds omit the seed.
+    if (file === this.seedFile) this.save(config);
+    return config;
   }
   save(input) {
     const config = validateConfig(input);

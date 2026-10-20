@@ -52,6 +52,8 @@
 
 找到唯一位置时只填入空白项；已有设置不会被自动覆盖。找到多处安装时由你选择，核对后点击保存。任意磁盘位置、尚未生成的数据库和自定义文件名不能保证自动识别。
 
+首次打开时直接进入安装页面。顶部会根据检查结果给出下一步按钮；已有程序先点击「识别已有程序」或「选择已有程序文件夹」，唯一识别结果会保存到本机。路径未选择时明确显示尚未选择，不再列成插件全部缺失。已有配置的用户可直接前往启动台。
+
 ### 安装顺序
 
 1. 打开「安装与更新」，检测本机环境。缺少 Node.js 时点击安装 LTS，执行 `winget install -e --id OpenJS.NodeJS.LTS`，附加接受协议和禁用终端交互参数。结束后重新读取系统与用户 PATH，再检测 Node.js/npm；通常无需重启电脑。若仍未检测到，先重新打开启动器；仅在安装器要求时重启电脑。未安装 winget 时可打开 Node.js 官网手动安装。
@@ -61,7 +63,7 @@
 5. 安装 HDSI：在线检查 `beta` 后安装，或拖入官方 `.tgz`。每次安装 HDSI 前，先补齐 21 个 Console 管理模块、`koishi-plugin-adapter-onebot` 和 `@koishijs/plugin-database-sqlite`；任一步失败就停止。
 6. **全部安装检查通过后才能配置。** 检查覆盖 Node.js/npm、QQ、SnowLuma、Koishi 运行依赖、Console 模块、OneBot、SQLite 和 HDSI。向导入口、导出及写入都会检查。
 
-官方来源：[Koishi 脚手架说明](https://koishi.chat/zh-CN/manual/starter/boilerplate.html)、[SnowLuma Releases](https://github.com/SnowLuma/SnowLuma/releases)、[QQ 官网](https://im.qq.com/pc/)、[HDS-Interlude Releases](https://gitee.com/MomoiCore/hds-interlude/releases)。
+官方来源：[Koishi 脚手架说明](https://koishi.chat/zh-CN/manual/starter/boilerplate.html)、[SnowLuma Releases](https://github.com/SnowLuma/SnowLuma/releases)、[QQ 官网](https://im.qq.com/pc/)、[HDS-Interlude Releases](https://github.com/ISEKAI-MomoiCore/HDS-Interlude/releases)。
 
 ### 配置、备份与表情包
 
@@ -73,6 +75,8 @@
 
 启用「本地表情包库」后，可直接创建并打开 `<Koishi目录>/data/hds-interlude/stickers` 来放入素材；保存时也会创建缺失目录。关闭该选项不会删除素材。另需给支持识图的模型启用「表情包描述」。
 
+插件发布页默认使用 [GitHub](https://github.com/ISEKAI-MomoiCore/HDS-Interlude/releases)，保留 [Gitee 备用入口](https://gitee.com/MomoiCore/hds-interlude/releases)。GitHub 发布列表无法获取时自动尝试 Gitee，页面标明实际来源。
+
 ### 两种插件更新方式
 
 - **npm beta**：执行 `npm view koishi-plugin-hds-interlude dist-tags --json`，将 `beta` 与本地包版本比较。确认安装后使用 `npm install --save-exact koishi-plugin-hds-interlude@已检查版本`，锁定页面展示的版本。
@@ -82,11 +86,13 @@
 
 ### 启动器自动更新
 
-启动后会检查本仓库最新正式 Release；也可在「安装与更新 → 启动器更新」手动检查。发现更新后点击「下载并准备更新」，校验 SHA-256 和文件大小，停止后台服务，再点击重启更新。
+启动后会检查本仓库最新正式 Release；遇到网络错误或 HTTP 403/429 时，在隔离会话中自动重试直连 GitHub，不修改 WebUI 或系统代理；仍然失败时显示处理办法。
+
+也可在「安装与更新 → 启动器更新」手动检查。发现更新后点击「下载并准备更新」，校验 SHA-256 和文件大小，停止后台服务，再点击重启更新。
 
 新版本安装在 `%APPDATA%\InterludeLauncher\versions` 的独立目录，配置保留。旧版本文件和下载不会自动删除。从支持此机制的旧启动入口打开时，会自动转到已启用的新版本。关闭软件前未点击重启启用的更新，下次需要重新下载准备。无网络或 GitHub 限流时仍可正常使用本地功能，也可手动下载 Release。
 
-Release 标题采用 **`HDS-Interlude-Launcher-1.3.0`** 格式；Git 标签为 `v1.3.0`。`launcher-update.json` 和 `SHA256SUMS.txt` 是更新清单及校验文件，普通用户只需下载 ZIP。
+Release 标题采用 **`HDS-Interlude-Launcher-1.3.1`** 格式；Git 标签为 `v1.3.1`。`launcher-update.json` 和 `SHA256SUMS.txt` 是更新清单及校验文件，普通用户只需下载 ZIP。
 
 ## 数据与运行说明
 
@@ -106,7 +112,7 @@ Release 标题采用 **`HDS-Interlude-Launcher-1.3.0`** 格式；Git 标签为 `
 | 项目                                                                                | 用途                             | Star                                                                                                                                                                |
 | ----------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [HDS-Interlude Launcher](https://github.com/Reversed-Future/HDS-Interlude-Launcher) | 本启动器                         | [![Stars](https://img.shields.io/github/stars/Reversed-Future/HDS-Interlude-Launcher?style=flat-square)](https://github.com/Reversed-Future/HDS-Interlude-Launcher) |
-| [HDS-Interlude](https://gitee.com/MomoiCore/HDS-Interlude)                          | 叙事与长期记忆插件、配置生成参考 | [前往 Gitee Star](https://gitee.com/MomoiCore/HDS-Interlude)                                                                                                        |
+| [HDS-Interlude](https://github.com/ISEKAI-MomoiCore/HDS-Interlude)                  | 叙事与长期记忆插件、配置生成参考 | [前往 GitHub Star](https://github.com/ISEKAI-MomoiCore/HDS-Interlude)                                                                                               |
 | [Koishi](https://github.com/koishijs/koishi)                                        | 聊天机器人框架                   | [![Stars](https://img.shields.io/github/stars/koishijs/koishi?style=flat-square)](https://github.com/koishijs/koishi)                                               |
 | [SnowLuma](https://github.com/SnowLuma/SnowLuma)                                    | QQ 互操作运行时                  | [![Stars](https://img.shields.io/github/stars/SnowLuma/SnowLuma?style=flat-square)](https://github.com/SnowLuma/SnowLuma)                                           |
 | [OneBot Adapter](https://github.com/koishijs/koishi-plugin-adapter-onebot)          | Koishi 与 SnowLuma 消息适配      | [![Stars](https://img.shields.io/github/stars/koishijs/koishi-plugin-adapter-onebot?style=flat-square)](https://github.com/koishijs/koishi-plugin-adapter-onebot)   |

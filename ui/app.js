@@ -8,7 +8,7 @@ import { initGuide } from "./configuration.js";
 import { initUpdates } from "./updates.js";
 const routes = {
   dashboard: "启动台",
-  webui: "WebUI",
+  webui: "网页管理",
   reader: "剧本书架",
   settings: "设置",
   setup: "安装与更新",
@@ -110,6 +110,14 @@ async function init() {
     document.body.classList.remove("keyboard"),
   );
   if (data.initialError) notice(data.initialError, true);
+  if (
+    ![
+      store.config.koishiDir,
+      store.config.snowlumaDir,
+      store.config.qqExe,
+    ].some(Boolean)
+  )
+    await navigate("setup");
   refreshLogs();
 }
 init().catch((error) => notice(error.message, true));

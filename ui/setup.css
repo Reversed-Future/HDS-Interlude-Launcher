@@ -415,3 +415,34 @@
   background: #f5f4f9;
   font-variant-numeric: tabular-nums;
 }
+.setup-assistant {
+  margin-bottom: 20px;
+  border-color: #cfc7ea;
+  background: #fdfcff;
+}
+.setup-assistant h2 {
+  margin-top: 10px;
+  font-size: 21px;
+}
+.setup-assistant p {
+  max-width: 780px;
+  font-size: 13px;
+}
+.setup-assistant .setup-journey {
+  color: #685997;
+}
+.setup-assistant #assistant-error {
+  color: #a5473e;
+}
+.readiness-details {
+  margin-top: 12px;
+}
+summary {
+  cursor: pointer;
+}
+.check-detail summary {
+  font-size: 12px;
+}
+.launcher-update-card {
+  margin-top: 20px;
+}

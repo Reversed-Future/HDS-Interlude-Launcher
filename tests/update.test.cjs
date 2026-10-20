@@ -15,7 +15,109 @@ const { scanPrograms, discover } = require("../src/discovery.cjs");
 const { StarCounts } = require("../src/stars.cjs");
 const projects = require("../src/about.cjs");
 const config = require("../src/update/config.cjs");
+const { withDirectRetry } = require("../src/update/retry.cjs");
+const { ConfigStore, defaults } = require("../src/config.cjs");
 const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), "hds-update-"));
+test("a new scaffold still needs configuration even when it already has koishi.yml", () => {
+  const {
+    markConfiguration,
+    needsConfiguration,
+  } = require("../src/setup/progress.cjs");
+  const directory = temp();
+  fs.writeFileSync(path.join(directory, "koishi.yml"), "plugins: {}\n");
+  assert.equal(needsConfiguration(directory), false);
+  markConfiguration(directory, "pending");
+  assert.equal(needsConfiguration(directory), true);
+  markConfiguration(directory, "saved");
+  assert.equal(needsConfiguration(directory), false);
+});
+test("a local seed persists across changing to a public build without a seed", () => {
+  const root = temp(),
+    seed = path.join(root, "seed.json"),
+    profile = path.join(root, "profile", "settings.json");
+  fs.writeFileSync(seed, JSON.stringify({ ...defaults, koishiDir: root }));
+  assert.equal(new ConfigStore(profile, seed).load().koishiDir, root);
+  assert.equal(new ConfigStore(profile).load().koishiDir, root);
+  fs.writeFileSync(seed, JSON.stringify({ ...defaults, koishiDir: "" }));
+  assert.equal(new ConfigStore(profile, seed).load().koishiDir, root);
+});
+test("public GitHub requests retry rate limits but not cancellation, 404 or other hosts", async () => {
+  let calls = 0;
+  const direct = async () => {
+    calls++;
+    return Response.json({ ok: true });
+  };
+  const fetcher = withDirectRetry(
+    async () => new Response("limited", { status: 403 }),
+    direct,
+  );
+  assert.equal((await fetcher(config.api)).status, 200);
+  assert.equal(calls, 1);
+  assert.equal((await fetcher("https://example.com/file")).status, 403);
+  assert.equal(calls, 1);
+  assert.equal(
+    (
+      await withDirectRetry(
+        async () => new Response("", { status: 404 }),
+        direct,
+      )(config.api)
+    ).status,
+    404,
+  );
+  assert.equal(calls, 1);
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(fetcher(config.api, { signal: controller.signal }));
+  assert.equal(calls, 1);
+  const failed = await withDirectRetry(
+    async () => new Response("limited", { status: 403 }),
+    async () => {
+      throw new Error("offline");
+    },
+  )(config.api);
+  assert.equal(failed.status, 403);
+  const redirect = await withDirectRetry(
+    async () => new Response("limited", { status: 403 }),
+    async () =>
+      new Response(null, {
+        status: 302,
+        headers: {
+          location: "https://release-assets.githubusercontent.com/file",
+        },
+      }),
+  )(config.url, { redirect: "manual" });
+  assert.equal(redirect.status, 302);
+});
+test("plugin releases prefer GitHub and label the Gitee fallback", async () => {
+  const { releases, LINKS } = require("../src/setup/releases.cjs");
+  const url =
+    "https://github.com/ISEKAI-MomoiCore/HDS-Interlude/releases/download/1.0.1-rc57/plugin.tgz";
+  const rows = await releases(async () =>
+    Response.json([
+      {
+        tag_name: "1.0.1-rc57",
+        draft: false,
+        assets: [{ name: "plugin.tgz", browser_download_url: url }],
+      },
+    ]),
+  );
+  assert.equal(rows[0].url, url);
+  assert.equal(rows[0].source, "GitHub");
+  const urls = [];
+  const fallback = await releases(async (url) => {
+    urls.push(url);
+    return urls.length === 1
+      ? new Response("", { status: 403 })
+      : new Response(
+          fs.readFileSync(
+            path.join(__dirname, "fixtures/gitee-releases.html"),
+            "utf8",
+          ),
+        );
+  });
+  assert.equal(fallback[0].source, "Gitee（备用）");
+  assert.equal(urls[1], LINKS.interludeBackup);
+});
 const manifest = {
   schemaVersion: 1,
   version: "1.3.0",
@@ -158,20 +260,22 @@ test("discovery recognizes concrete files, returns multiple installations and to
   assert.deepEqual(failed.qqExe, []);
   assert.ok(failed.qqError);
 });
-test("GitHub and Gitee stars keep zero, cache for one hour, and retain stale counts offline", async () => {
+test("GitHub stars keep zero, cache for one hour, and retain stale counts offline", async () => {
   const profile = temp();
   const urls = [];
   const stars = new StarCounts(profile, async (url) => {
     urls.push(url);
     return Response.json({
-      stargazers_count: url.includes("gitee.com") ? 43 : 0,
+      stargazers_count: url.includes("ISEKAI-MomoiCore") ? 43 : 0,
     });
   });
   const [first, concurrent] = await Promise.all([stars.load(), stars.load()]);
   assert.deepEqual(first, concurrent);
   assert.equal(urls.length, projects.length);
   assert.ok(
-    urls.includes("https://gitee.com/api/v5/repos/MomoiCore/HDS-Interlude"),
+    urls.includes(
+      "https://api.github.com/repos/ISEKAI-MomoiCore/HDS-Interlude",
+    ),
   );
   assert.equal(first.launcher.count, 0);
   assert.equal(first.hdsi.count, 43);

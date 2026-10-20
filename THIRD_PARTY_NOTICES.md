@@ -2,7 +2,7 @@
 
 HDS-Interlude Launcher 由 Reversed-Future 维护，采用 AGPL-3.0-only，完整文本见 LICENSE。
 
-- 配置默认值和 YAML 生成逻辑（`ui/config-model.js`）源于 MomoiCore / HDS-Interlude 的 `新人上手一条龙配置服务v1.0.1-rc28.html`，经拆分与界面适配。来源：https://gitee.com/MomoiCore/HDS-Interlude 。上游 package.json 声明 AGPL-3.0；保留上游许可要求。其余向导、桌面管理、安装与更新功能在本项目中实现。
+- 配置默认值和 YAML 生成逻辑（`ui/config-model.js`）源于 MomoiCore / HDS-Interlude 的 `新人上手一条龙配置服务v1.0.1-rc28.html`，经拆分与界面适配。来源：https://github.com/ISEKAI-MomoiCore/HDS-Interlude （备用：https://gitee.com/MomoiCore/HDS-Interlude） 。上游 package.json 声明 AGPL-3.0；保留上游许可要求。其余向导、桌面管理、安装与更新功能在本项目中实现。
 - Koishi：https://github.com/koishijs/koishi 。通过官方脚手架与 npm 安装，不随本发行包附带。
 - OneBot Adapter：https://github.com/koishijs/koishi-plugin-adapter-onebot 。MIT，通过 npm 安装。
 - SnowLuma：https://github.com/SnowLuma/SnowLuma 。源码可见非商业许可，非 OSI 开源许可；下载官方未修改的发行包，不随本项目再分发。请阅读上游 LICENSE、EULA.md 与 PRIVACY.md。

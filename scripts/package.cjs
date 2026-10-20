@@ -42,16 +42,21 @@ const appRoot = path.join(destination, "resources", "app");
 fs.mkdirSync(appRoot, { recursive: true });
 for (const file of [
   "src",
-  "assets",
   "ui",
   "package.json",
   "README.md",
   "LICENSE",
   "THIRD_PARTY_NOTICES.md",
-  "docs",
 ]) {
   copyTree(path.join(root, file), path.join(appRoot, file));
 }
+fs.mkdirSync(path.join(appRoot, "assets"));
+for (const file of ["icon.svg", "icon.png", "icon.ico"])
+  copyTree(path.join(root, "assets", file), path.join(appRoot, "assets", file));
+copyTree(
+  path.join(root, "docs", "screenshots"),
+  path.join(appRoot, "docs", "screenshots"),
+);
 // A public build never contains the maintainer's local-settings.json.
 // Copy the exact runtime dependency tree recorded by npm; dev dependencies stay out.
 const lock = require("../package-lock.json");
