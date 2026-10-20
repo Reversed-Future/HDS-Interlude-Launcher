@@ -69,6 +69,13 @@ else {
         version: app.getVersion(),
         fetcher: fetchUpdate,
       });
+      const management =
+        new (require("./management/service.cjs").ManagementService)(
+          configStore,
+          processes,
+          setup,
+        );
+      setup.management = management;
       window = new BrowserWindow({
         width: 1260,
         height: 850,
@@ -123,6 +130,7 @@ else {
         initialError,
         setup,
         updater,
+        management,
       });
       window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
       window.webContents.on("will-navigate", (event) => event.preventDefault());
@@ -137,6 +145,7 @@ else {
           exiting ||
           (!processes.children.size &&
             !setup.busy &&
+            !management.busy &&
             !processes.busy.size &&
             !processes.batchStarting)
         )
@@ -155,7 +164,12 @@ else {
             );
         };
         webui.hide();
-        if (setup.busy || processes.busy.size || processes.batchStarting) {
+        if (
+          setup.busy ||
+          management.busy ||
+          processes.busy.size ||
+          processes.batchStarting
+        ) {
           await dialog.showMessageBox(window, {
             type: "info",
             message: "请等待当前安装、配置或进程操作完成后再退出。",
@@ -191,6 +205,7 @@ else {
         if (!exiting) restoreWebUI();
       });
       window.on("closed", () => {
+        management.destroy();
         webui.destroy();
       });
     })

@@ -66,7 +66,12 @@ class SetupService extends EventEmitter {
     this.emit("log", line);
   }
   async job(label, action) {
-    if (this.busy || this.processes.busy.size || this.processes.batchStarting)
+    if (
+      this.busy ||
+      this.management?.busy ||
+      this.processes.busy.size ||
+      this.processes.batchStarting
+    )
       throw new Error("请等待当前操作完成。");
     this.busy = true;
     this.status = { phase: "running", label };

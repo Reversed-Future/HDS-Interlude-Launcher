@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="setup.css" />
     <link rel="stylesheet" href="configuration.css" />
+    <link rel="stylesheet" href="management.css" />
   </head>
   <body>
     <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -90,8 +91,11 @@
         >
           <svg><use href="#i-grid"></use></svg>启动台
         </button>
+        <button class="nav-item" data-route="management">
+          <svg><use href="#i-settings"></use></svg>常用管理
+        </button>
         <button class="nav-item" data-route="webui">
-          <svg><use href="#i-globe"></use></svg>网页管理
+          <svg><use href="#i-globe"></use></svg>高级管理
         </button>
         <button class="nav-item" data-route="reader">
           <svg><use href="#i-book"></use></svg>剧本书架
@@ -298,7 +302,7 @@
         >
           <div class="page-heading compact">
             <div>
-              <h1 id="web-title">网页管理</h1>
+              <h1 id="web-title">高级管理</h1>
               <p>切换查看 Koishi 或 SnowLuma 的管理页面。请先启动对应程序。</p>
             </div>
           </div>
@@ -962,6 +966,109 @@
         </section>
         <section
           class="page"
+          id="page-management"
+          hidden
+          aria-labelledby="management-title"
+        >
+          <div class="page-heading">
+            <div>
+              <h1 id="management-title">常用管理</h1>
+              <p>连接 QQ、调整插件和角色设定。先启动程序，再读取当前配置。</p>
+            </div>
+            <button id="manage-refresh" class="button">连接并刷新</button>
+          </div>
+          <div class="manage-tabs" aria-label="管理功能">
+            <button
+              class="button selected"
+              data-manage-tab="qq"
+              aria-pressed="true"
+            >
+              QQ 连接
+            </button>
+            <button
+              class="button"
+              data-manage-tab="plugins"
+              aria-pressed="false"
+            >
+              插件开关
+            </button>
+            <button
+              class="button"
+              data-manage-tab="config"
+              aria-pressed="false"
+            >
+              HDSI 与连接配置
+            </button>
+          </div>
+          <p id="manage-message" role="status" aria-live="polite">
+            正在连接管理服务…
+          </p>
+          <div id="manage-content">
+            <div class="manage-columns">
+              <div data-manage-panel="qq">
+                <div class="manage-section-title">
+                  <h2>QQ 与 SnowLuma</h2>
+                  <button id="manage-snow-refresh" class="button small">
+                    刷新 QQ 状态
+                  </button>
+                </div>
+                <div class="manage-actions">
+                  <button class="text-button" data-manage-web="snowluma">
+                    SnowLuma 高级管理</button
+                  ><button class="text-button" data-manage-logout="snow">
+                    退出管理登录
+                  </button>
+                </div>
+                <div id="manage-snow">
+                  <p class="manage-hint">
+                    启动 SnowLuma 后，点击刷新 QQ 状态。
+                  </p>
+                </div>
+                <div id="manage-snow-editor"></div>
+              </div>
+              <div data-manage-panel="plugins" hidden>
+                <div class="manage-section-title">
+                  <h2>Koishi 插件</h2>
+                  <button id="manage-koishi-refresh" class="button small">
+                    刷新插件列表
+                  </button>
+                </div>
+                <div class="manage-actions">
+                  <button class="text-button" data-manage-web="koishi">
+                    Koishi 高级管理</button
+                  ><button class="text-button" data-manage-logout="koishi">
+                    退出管理登录
+                  </button>
+                </div>
+                <div id="manage-koishi">
+                  <p class="manage-hint">启动 Koishi 后，点击刷新插件列表。</p>
+                </div>
+              </div>
+            </div>
+            <div data-manage-panel="config" hidden>
+              <section class="manage-card">
+                <h2>HDSI 与 QQ 连接配置</h2>
+                <p class="manage-hint">
+                  读取当前配置后编辑。保存前会备份
+                  koishi.yml，未显示的高级字段保持原值。
+                </p>
+                <button class="text-button" data-manage-connect>
+                  连接或登录 Koishi
+                </button>
+                <div class="manage-actions">
+                  <select id="manage-plugin-select" aria-label="选择插件配置">
+                    <option value="">先连接 Koishi</option></select
+                  ><button id="manage-read-plugin" class="button">
+                    读取当前配置
+                  </button>
+                </div>
+              </section>
+              <div id="manage-editor"></div>
+            </div>
+          </div>
+        </section>
+        <section
+          class="page"
           id="page-guide"
           aria-labelledby="guide-title"
           hidden=""
@@ -1019,7 +1126,7 @@
               <button class="button" data-go="webui">打开 WebUI</button>
               <div class="wizard-context-divider"></div>
               <p>
-                保存时会先备份原配置，再写入新配置。已有项目无需重新填写，可在网页管理中调整。
+                保存时会先备份原配置，再写入新配置。已有项目无需重新填写，可在常用管理中调整。
               </p>
             </aside>
           </div>

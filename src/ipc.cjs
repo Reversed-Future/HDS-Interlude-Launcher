@@ -40,6 +40,7 @@ function registerIPC({
   initialError,
   setup,
   updater,
+  management,
 }) {
   const trustedURL = pathToFileURL(htmlPath).href;
   const handle = (channel, action) =>
@@ -117,6 +118,7 @@ function registerIPC({
     if (!updater.staged) throw new Error("请先下载更新。");
     if (
       setup.busy ||
+      management.busy ||
       processes.children.size ||
       processes.busy.size ||
       processes.batchStarting
@@ -128,7 +130,12 @@ function registerIPC({
     return true;
   });
   handle("config:save", (config) => {
-    if (setup.busy || processes.busy.size || processes.batchStarting)
+    if (
+      setup.busy ||
+      management.busy ||
+      processes.busy.size ||
+      processes.batchStarting
+    )
       throw new Error("请等待启动或停止操作完成后再保存设置。");
     return configStore.save(config);
   });
@@ -161,6 +168,7 @@ function registerIPC({
     return result.filePaths[0];
   });
   const canStart = () => {
+    if (management.busy) throw new Error("请等待常用管理的保存操作完成。");
     if (setup.busy) throw new Error("安装或配置操作尚未完成，请稍后启动。");
     if (processes.batchStarting)
       throw new Error("一键启动正在进行，请先取消等待。");
@@ -178,11 +186,15 @@ function registerIPC({
     return true;
   });
   handle("process:stop", (id) => {
+    if (management.busy) throw new Error("请等待常用管理的保存操作完成。");
     if (processes.batchStarting)
       throw new Error("请先取消一键启动等待，再停止程序。");
     return processes.stop(id);
   });
-  handle("process:stop-all", () => processes.stopAll());
+  handle("process:stop-all", () => {
+    if (management.busy) throw new Error("请等待常用管理的保存操作完成。");
+    return processes.stopAll();
+  });
   handle("logs:clear", (id) => {
     logs.clear(id);
     return true;
@@ -219,5 +231,6 @@ function registerIPC({
   handle("webui:resize", (rect) => webui.resize(rect));
   handle("webui:reload", () => webui.reload());
   require("./setup/ipc.cjs").registerSetupIPC(handle, { window, setup });
+  require("./management/ipc.cjs").registerManagementIPC(handle, management);
 }
 module.exports = { registerIPC };

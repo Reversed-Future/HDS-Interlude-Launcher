@@ -10,6 +10,26 @@ const subscribe = (channel, callback) => {
   return () => ipcRenderer.removeListener(channel, listener);
 };
 contextBridge.exposeInMainWorld("launcher", {
+  manage: (operation, input) => {
+    const allowed = [
+      "koishi-status",
+      "koishi-login",
+      "koishi-logout",
+      "plugin-toggle",
+      "plugin-editor",
+      "plugin-save",
+      "snow-status",
+      "snow-login",
+      "snow-logout",
+      "snow-load",
+      "snow-editor",
+      "snow-save",
+      "sync-connection",
+    ];
+    if (!allowed.includes(operation))
+      return Promise.reject(new Error("未知管理操作。"));
+    return invoke("management:" + operation, input);
+  },
   detectPaths: (root) => invoke("paths:discover", root),
   projects: () => invoke("about:projects"),
   projectStars: () => invoke("about:stars"),

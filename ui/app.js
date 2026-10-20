@@ -6,13 +6,15 @@ import { initReader, openReader, invalidateReader } from "./reader.js";
 import { initSetup, inspectEnvironment } from "./setup.js";
 import { initGuide } from "./configuration.js";
 import { initUpdates } from "./updates.js";
+import { initManagement, openManagement } from "./management.js";
 const routes = {
   dashboard: "启动台",
-  webui: "网页管理",
+  webui: "高级管理",
   reader: "剧本书架",
   settings: "设置",
   setup: "安装与更新",
   guide: "配置向导",
+  management: "常用管理",
 };
 let navigation = 0;
 async function navigate(route, webService) {
@@ -50,6 +52,7 @@ async function navigate(route, webService) {
   if (route === "reader") await openReader();
   if (route === "dashboard") refreshLogs();
   if (route === "setup") await inspectEnvironment();
+  if (route === "management") await openManagement();
 }
 async function init() {
   if (!api) {
@@ -71,6 +74,7 @@ async function init() {
     invalidateReader();
   });
   initBrowser();
+  initManagement();
   initReader();
   await initSetup(() => {
     fillSettings();
