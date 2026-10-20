@@ -5,6 +5,8 @@ const { spawn, execFile } = require("node:child_process");
 const { promisify } = require("node:util");
 const { EventEmitter } = require("node:events");
 const { captureLines } = require("./logs.cjs");
+const { readConnection, waitForConnection } = require("./startup.cjs");
+const { detectWebUI } = require("./webui-address.cjs");
 const execFileAsync = promisify(execFile);
 const serviceIds = ["koishi", "snowluma", "qq"];
 
@@ -94,6 +96,7 @@ class ProcessManager extends EventEmitter {
     this.children = new Map();
     this.busy = new Set();
     this.batchStarting = false;
+    this.startup = { active: false, message: "" };
     this.states = Object.fromEntries(
       serviceIds.map((id) => [
         id,
@@ -111,6 +114,17 @@ class ProcessManager extends EventEmitter {
   log(id, stream, text) {
     const row = this.logs.append(id, stream, text);
     if (row) this.emit("log", { service: id, entry: row });
+  }
+  progress(active, message) {
+    this.startup = { active, message };
+    this.emit("startup", this.startup);
+  }
+  cancelStartup() {
+    this.startupAbort?.abort(
+      new Error(
+        "已取消等待；Koishi 不会继续启动。QQ 和 SnowLuma 保持当前状态。",
+      ),
+    );
   }
   async preflight(id, config) {
     await validateLaunch(id, config);
@@ -162,16 +176,26 @@ class ProcessManager extends EventEmitter {
               shell: false,
               windowsHide: true,
               stdio: ["ignore", "pipe", "pipe"],
-              env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" },
+              env: {
+                ...process.env,
+                FORCE_COLOR: "0",
+                NO_COLOR: "1",
+                ...(id === "snowluma" ? { SNOWLUMA_HOOK_AUTOLOAD: "1" } : {}),
+              },
             });
       if (id !== "qq") {
         this.children.set(id, child);
         this.log(id, "system", `工作目录：${cwd}\n启动命令：${command}`);
+        const capture = (stream, line) => {
+          this.log(id, stream, line);
+          const url = detectWebUI(id, line);
+          if (url) this.emit("webui-address", { id, url, directory: cwd });
+        };
         captureLines(child.stdout, config.logEncoding, (line) =>
-          this.log(id, "stdout", line),
+          capture("stdout", line),
         );
         captureLines(child.stderr, config.logEncoding, (line) =>
-          this.log(id, "stderr", line),
+          capture("stderr", line),
         );
         child.once("exit", (code, signal) => {
           this.children.delete(id);
@@ -215,22 +239,49 @@ class ProcessManager extends EventEmitter {
   }
   async startAll(config) {
     if (this.batchStarting) throw new Error("一键启动正在进行，请稍候。");
+    if (this.busy.size) throw new Error("请等待当前程序操作完成后再一键启动。");
     this.batchStarting = true;
+    this.startupAbort = new AbortController();
+    const { signal } = this.startupAbort;
     try {
-      // Validate all paths before launching any program; errors remain independently visible.
+      this.progress(true, "正在检查启动配置…");
       for (const id of serviceIds) await validateLaunch(id, config);
-      const errors = [];
-      for (const id of ["qq", "snowluma", "koishi"]) {
-        try {
-          await this.start(id, config);
-        } catch (error) {
-          errors.push(error.message);
-        }
-      }
-      if (errors.length) throw new Error(errors.join("\n"));
+      const connection = readConnection(config.koishiDir);
+      signal.throwIfAborted();
+      this.progress(true, "正在打开 QQ，请在 QQ 窗口中完成登录…");
+      await this.start("qq", config);
+      signal.throwIfAborted();
+      this.progress(true, "正在启动 SnowLuma，已启用自动加载…");
+      await this.start("snowluma", config);
+      this.progress(
+        true,
+        `请在 QQ 窗口完成登录。正在等待 SnowLuma 自动加载及 ${connection.port} 端口就绪，无需手动点击加载。`,
+      );
+      await waitForConnection(connection, signal, {
+        check: () => {
+          if (!this.children.has("snowluma"))
+            throw new Error(
+              "SnowLuma 已退出，Koishi 尚未启动。请查看 SnowLuma 日志后重试。",
+            );
+        },
+      });
+      signal.throwIfAborted();
+      this.progress(true, "QQ 已登录，SnowLuma 连接已就绪。正在启动 Koishi…");
+      await this.start("koishi", config);
+      this.progress(
+        false,
+        "QQ 已登录，SnowLuma 已就绪，Koishi 已启动。管理页地址将从日志自动识别。",
+      );
       return this.snapshot();
+    } catch (error) {
+      this.progress(
+        false,
+        signal.aborted ? signal.reason.message : error.message,
+      );
+      throw signal.aborted ? signal.reason : error;
     } finally {
       this.batchStarting = false;
+      this.startupAbort = null;
     }
   }
   async stop(id) {
@@ -274,7 +325,7 @@ class ProcessManager extends EventEmitter {
     return this.snapshot();
   }
   async stopAll() {
-    if (this.batchStarting) throw new Error("请等待一键启动完成后再停止服务。");
+    if (this.batchStarting) throw new Error("请先点击“取消等待”，再停止服务。");
     const results = await Promise.allSettled(
       ["koishi", "snowluma"].map((id) => this.stop(id)),
     );

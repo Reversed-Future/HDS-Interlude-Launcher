@@ -27,7 +27,7 @@ export async function openWebUI(id) {
   $("#web-address").textContent =
     (selected === "koishi"
       ? store.config.koishiUrl
-      : store.config.snowlumaUrl) || "尚未配置地址";
+      : store.config.snowlumaUrl) || "等待从启动日志识别地址";
   showStatus({ loading: true });
   try {
     const state = await api.showWebUI({ id: selected, rect: rect() });
@@ -41,6 +41,12 @@ export async function hideWebUI() {
   await api.hideWebUI();
 }
 export function initBrowser() {
+  api.onWebUIAddress(({ key, url }) => {
+    store.config[key] = url;
+    document.getElementById(key).value = url;
+    if (key === (selected === "koishi" ? "koishiUrl" : "snowlumaUrl"))
+      openWebUI();
+  });
   $$("[data-web-tab]").forEach((button) =>
     button.addEventListener("click", () => openWebUI(button.dataset.webTab)),
   );

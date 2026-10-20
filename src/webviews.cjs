@@ -31,7 +31,10 @@ class WebUIManager {
   }
   show(id, url, rect) {
     if (!["koishi", "snowluma"].includes(id)) throw new Error("未知 WebUI。");
-    if (!url) throw new Error("请先在设置中填写 WebUI 地址。");
+    if (!url)
+      throw new Error(
+        "请先一键启动程序，管理页地址会从启动日志自动识别；也可以在设置中手动填写。",
+      );
     validateUrl(url);
     this.hide();
     let item = this.views.get(id);

@@ -24,9 +24,9 @@
 
 ## 能做什么
 
-- **一键启动**：依次发起 QQ、SnowLuma、Koishi 的启动请求。Koishi 在配置目录执行 `npm run start`；SnowLuma 在配置目录运行 `launcher.bat`。
+- **一键启动**：打开 QQ 并启动 SnowLuma 自动加载；你只需在 QQ 窗口登录。启动器确认 OneBot 返回配置的 QQ 账号及在线状态后，才在 Koishi 目录执行 `npm run start`。等待期间可取消，5 分钟未就绪会显示处理提示。
 - **内置日志**：切换查看两个后台服务的标准输出和错误输出，支持搜索、复制、清空和跟随。启动器不弹出 PowerShell 日志窗口。
-- **内嵌 WebUI**：独立 Chromium 视图打开两个管理页面，保留本机登录状态，支持通常不允许 iframe 嵌入的页面。
+- **内嵌 WebUI**：从两个程序的启动日志自动识别并保存本机管理页地址，端口改变时同步更新页面。独立 Chromium 视图保留本机登录状态，支持通常不允许 iframe 嵌入的页面；设置中仍可手动填写地址。
 - **安装与检查**：Node.js LTS、QQ 官方安装包、SnowLuma 官方完整包、Koishi 脚手架，以及 HDSI 所需插件。
 - **HDSI 更新**：检查 npm `beta` 通道，或拖入本地 `.tgz`。显示真实包版本，安装前备份配置和依赖清单。
 - **配置向导**：连接程序 → 模型连接 → 角色与白名单 → 世界与发言 → 检查并保存。依据 rc28 教程重做原生界面。
@@ -48,7 +48,7 @@
 | 已安装的 QQ                | 「设置 → 自动识别路径」读取正在运行的 QQ 进程和安装注册表，验证实际 `QQ.exe`                    |
 | 已有 Koishi / SnowLuma     | 检查默认安装目录、启动器附近和已配置目录；也可「选择父目录扫描」，最多向下两层、检查 400 个目录 |
 | 剧本数据库                 | 识别已找到的 Koishi 项目下真实存在的 `data/koishi.db`；其他位置可手动选择                       |
-| WebUI                      | 地址请按各程序实际配置或启动日志填写；自定义端口不会被推断                                      |
+| WebUI                      | 从 Koishi Console / SnowLuma WebUI 的启动日志读取实际本机地址；没有识别到时可手动填写           |
 
 找到唯一位置时只填入空白项；已有设置不会被自动覆盖。找到多处安装时由你选择，核对后点击保存。任意磁盘位置、尚未生成的数据库和自定义文件名不能保证自动识别。
 
@@ -92,13 +92,14 @@
 
 新版本安装在 `%APPDATA%\InterludeLauncher\versions` 的独立目录，配置保留。旧版本文件和下载不会自动删除。从支持此机制的旧启动入口打开时，会自动转到已启用的新版本。关闭软件前未点击重启启用的更新，下次需要重新下载准备。无网络或 GitHub 限流时仍可正常使用本地功能，也可手动下载 Release。
 
-Release 标题采用 **`HDS-Interlude-Launcher-1.3.1`** 格式；Git 标签为 `v1.3.1`。`launcher-update.json` 和 `SHA256SUMS.txt` 是更新清单及校验文件，普通用户只需下载 ZIP。
+Release 标题采用 **`HDS-Interlude-Launcher-1.3.2`** 格式；Git 标签为 `v1.3.2`。`launcher-update.json` 和 `SHA256SUMS.txt` 是更新清单及校验文件，普通用户只需下载 ZIP。
 
 ## 数据与运行说明
 
 - 设置位于 `%APPDATA%\InterludeLauncher\settings.json`。向导草稿不保存 API Key / Token；生成的 YAML 本身包含凭据，请妥善保存。
 - 剧本读取使用 SQLite 只读模式，支持 WAL；依赖 `interlude_story` / `interlude_script_entry` 实际表结构。不兼容的数据库会提示错误。
-- 「运行中」表示进程仍在运行，不代表 QQ 已登录、SnowLuma 已注入或模型 API 已连接；这些状态请看日志和 WebUI。
+- 单个程序的「运行中」表示进程仍在运行。一键启动会额外验证 SnowLuma 的 OneBot 在线状态与 QQ 账号；模型 API 的状态仍以 Koishi 日志为准。
+- SnowLuma 仍在配置目录运行 `launcher.bat`，由环境变量 `SNOWLUMA_HOOK_AUTOLOAD=1` 启用自动加载，不修改其持久配置。就绪检查读取 `koishi.yml` 中已启用的 OneBot 正向 WebSocket 地址与密钥，支持本机自定义端口；账号不一致或未就绪时不会继续启动 Koishi。
 - 启动器只接管自己启动的后台进程；不能追溯外部进程的日志。停止全部会结束受管理的 Koishi / SnowLuma 进程树，QQ 保持打开。
 - 程序日志每个服务保留最近 3,000 条，界面显示最新 600 条；安装日志保留 2,500 行。关闭后内存日志清空。乱码可切换 GB18030 / GBK 后重启服务。
 - 下载、失败的 `.part`、旧版本和备份均保留，按需手动清理。下载和安装不会绕过 Windows 安装窗口或 UAC。

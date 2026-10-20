@@ -60,6 +60,7 @@ function registerIPC({
     version: require("../package.json").version,
     config: configStore.load(),
     states: processes.snapshot(),
+    startup: processes.startup,
     logs: { koishi: logs.get("koishi"), snowluma: logs.get("snowluma") },
     initialError,
   }));
@@ -161,6 +162,8 @@ function registerIPC({
   });
   const canStart = () => {
     if (setup.busy) throw new Error("安装或配置操作尚未完成，请稍后启动。");
+    if (processes.batchStarting)
+      throw new Error("一键启动正在进行，请先取消等待。");
   };
   handle("process:start", (id) => {
     canStart();
@@ -170,7 +173,15 @@ function registerIPC({
     canStart();
     return processes.startAll(configStore.load());
   });
-  handle("process:stop", (id) => processes.stop(id));
+  handle("process:cancel", () => {
+    processes.cancelStartup();
+    return true;
+  });
+  handle("process:stop", (id) => {
+    if (processes.batchStarting)
+      throw new Error("请先取消一键启动等待，再停止程序。");
+    return processes.stop(id);
+  });
   handle("process:stop-all", () => processes.stopAll());
   handle("logs:clear", (id) => {
     logs.clear(id);

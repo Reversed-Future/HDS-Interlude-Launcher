@@ -93,6 +93,23 @@ else {
       );
       processes.on("state", (value) => send("app:state", value));
       processes.on("log", (value) => send("app:log", value));
+      processes.on("startup", (value) => send("app:startup", value));
+      processes.on("webui-address", ({ id, url, directory }) => {
+        const config = configStore.load();
+        const key = id === "koishi" ? "koishiUrl" : "snowlumaUrl";
+        const dirKey = id === "koishi" ? "koishiDir" : "snowlumaDir";
+        if (config[dirKey] !== directory || config[key] === url) return;
+        try {
+          configStore.save({ ...config, [key]: url });
+          send("app:webui-address", { key, url });
+        } catch {
+          processes.log(
+            id,
+            "system",
+            "管理页地址已识别，但保存失败。请检查设置文件是否可写。",
+          );
+        }
+      });
       setup.on("log", (value) => send("setup:log", value));
       setup.on("state", (value) => send("setup:state", value));
       updater.on("state", (value) => send("updater:state", value));

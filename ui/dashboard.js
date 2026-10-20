@@ -11,6 +11,11 @@ const phases = {
 };
 
 export function updateDashboard() {
+  const startup = store.startup || { active: false, message: "" };
+  $("#startup-progress").hidden = !startup.message;
+  $("#startup-message").textContent = startup.message;
+  $("#startup-cancel").hidden = !startup.active;
+  $("#start-all").disabled = startup.active;
   for (const [id, state] of Object.entries(store.states)) {
     const badge = $(`[data-status="${id}"]`);
     badge.dataset.phase = state.phase;
@@ -26,7 +31,8 @@ export function updateDashboard() {
     const button = $(`[data-start="${id}"]`);
     const running =
       state.phase === "running" || (state.phase === "error" && state.pid);
-    button.disabled = ["starting", "stopping"].includes(state.phase);
+    button.disabled =
+      startup.active || ["starting", "stopping"].includes(state.phase);
     button.replaceChildren(
       document.createTextNode(
         id === "qq"
@@ -50,6 +56,7 @@ export function updateDashboard() {
   ).length;
   $("#service-summary").textContent = `${running} / 2 后台服务运行中`;
   $("#stop-all").disabled =
+    startup.active ||
     !Object.values(store.states).some((state) => state.pid) ||
     Object.values(store.states).some((state) =>
       ["starting", "stopping"].includes(state.phase),
@@ -121,29 +128,32 @@ export function refreshLogs() {
   if (!logFrame) logFrame = setTimeout(renderLogs, 100);
 }
 export function initDashboard(openWeb) {
+  $("#startup-cancel").addEventListener("click", (event) =>
+    action(event.currentTarget, () => api.cancelStartup()),
+  );
+  api.onStartup((value) => {
+    store.startup = value;
+    updateDashboard();
+  });
   $("#start-all").addEventListener("click", (event) =>
-    action(
-      event.currentTarget,
-      async () => {
-        if (
-          ![
-            store.config.koishiDir,
-            store.config.snowlumaDir,
-            store.config.qqExe,
-          ].every(Boolean)
-        ) {
-          document.dispatchEvent(
-            new CustomEvent("launcher:navigate", {
-              detail: { route: "setup" },
-            }),
-          );
-          return;
-        }
-        await api.startAll();
-        updateDashboard();
-      },
-      "启动请求已完成，服务就绪情况请查看日志。",
-    ),
+    action(event.currentTarget, async () => {
+      if (
+        ![
+          store.config.koishiDir,
+          store.config.snowlumaDir,
+          store.config.qqExe,
+        ].every(Boolean)
+      ) {
+        document.dispatchEvent(
+          new CustomEvent("launcher:navigate", {
+            detail: { route: "setup" },
+          }),
+        );
+        return;
+      }
+      await api.startAll();
+      updateDashboard();
+    }),
   );
   $("#stop-all").addEventListener("click", async (event) => {
     await action(
