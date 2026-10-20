@@ -16,7 +16,7 @@ const { config, profile } = require("./demo.cjs").createDemo(artifacts);
 const before = fs.readFileSync(path.join(profile, "settings.json"));
 (async () => {
   const app = await electron.launch({
-    executablePath: build.executable,
+    executablePath: process.env.HDS_UPDATER_TEST_EXECUTABLE || build.executable,
     args: [],
     env: { ...process.env, INTERLUDE_TEST_PROFILE: profile },
   });
@@ -87,9 +87,19 @@ const before = fs.readFileSync(path.join(profile, "settings.json"));
       .locator('#launcher-update-status[data-phase="available"]')
       .waitFor();
     await page.locator("#install-launcher-update").click();
-    await page
-      .locator('#launcher-update-status[data-phase="ready"]')
-      .waitFor({ state: "attached", timeout: 120000 });
+    await page.waitForFunction(
+      () =>
+        ["ready", "error"].includes(
+          document.querySelector("#launcher-update-status")?.dataset.phase,
+        ),
+      null,
+      { timeout: 120000 },
+    );
+    assert.equal(
+      await page.locator("#launcher-update-status").getAttribute("data-phase"),
+      "ready",
+      await page.locator("#launcher-update-status").textContent(),
+    );
     assert.equal(
       await page.locator("#page-setup").isVisible(),
       true,
@@ -122,6 +132,20 @@ const before = fs.readFileSync(path.join(profile, "settings.json"));
     );
   } catch (error) {
     console.error(error.message);
+    const page = await app.firstWindow().catch(() => null);
+    if (page)
+      console.error(
+        await page
+          .evaluate(() => ({
+            update: document.querySelector("#launcher-update-status")
+              ?.outerHTML,
+            message: document.querySelector("#setup-message")?.textContent,
+            visiblePages: [...document.querySelectorAll(".page")]
+              .filter((node) => !node.hidden)
+              .map((node) => node.id),
+          }))
+          .catch(() => null),
+      );
     throw error;
   } finally {
     await app
